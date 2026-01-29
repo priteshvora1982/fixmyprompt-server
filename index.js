@@ -107,7 +107,7 @@ app.post("/api/improve-prompt", async (req, res) => {
 
     // Call OpenAI API with gpt-4.1-mini
     const response = await openai.chat.completions.create({
-      model: "gpt-5.1",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
@@ -270,7 +270,7 @@ app.listen(PORT, () => {
   console.log(`[FixMyPrompt Server] Health check: GET /health`);
   console.log(`[FixMyPrompt Server] Improve prompt: POST /api/improve-prompt`);
   console.log(`[FixMyPrompt Server] Environment: ${NODE_ENV}`);
-  console.log(`[FixMyPrompt Server] Model: gpt-5.1`);
+  console.log(`[FixMyPrompt Server] Model: gpt-4.1`);
   console.log(`[FixMyPrompt Server] No length restrictions (v1 - test live)`);
   console.log(`[FixMyPrompt Server] CORS: Allowing all chrome-extension:// origins`);
 
