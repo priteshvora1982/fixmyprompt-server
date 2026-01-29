@@ -1,9 +1,11 @@
 /**
- * FixMyPrompt – Backend Proxy Server
+ * FixMyPrompt – Backend Proxy Server (CORRECTED)
  * Secure endpoint for prompt improvement (holds OpenAI API key)
  * 
- * IMPORTANT: This server does NOT log or persist prompts.
- * It only forwards requests to OpenAI and returns responses.
+ * FIXES:
+ * 1. Added app.set("trust proxy", 1) for Express rate limiting
+ * 2. Changed model from gpt-4-turbo to gpt-4.1-mini (available model)
+ * 3. Improved error handling and logging
  */
 
 const express = require("express");
@@ -17,11 +19,13 @@ const PORT = process.env.PORT || 3000;
 // Configuration
 const NODE_ENV = process.env.NODE_ENV || "production";
 
+// CRITICAL FIX #1: Trust proxy for rate limiting behind reverse proxy (Railway uses one)
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(express.json({ limit: "10kb" })); // Limit payload size
 
 // CORS configuration - allow all chrome-extension origins
-// This is safe because the extension validates the backend URL
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow all chrome-extension:// origins
@@ -54,7 +58,11 @@ const limiter = rateLimit({
   max: 10,
   message: "Too many requests, please try again later",
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health check
+    return req.path === "/health";
+  }
 });
 
 app.use("/api/", limiter);
@@ -83,8 +91,13 @@ app.post("/api/improve-prompt", async (req, res) => {
   try {
     const { prompt, platform } = req.body;
 
+    console.log("[Server] Request received");
+    console.log("[Server] Prompt length:", prompt?.length || 0);
+    console.log("[Server] Platform:", platform);
+
     // Validate input
     if (!prompt || typeof prompt !== "string") {
+      console.warn("[Server] Invalid prompt type");
       return res.status(400).json({
         success: false,
         error: "Invalid prompt: must be a non-empty string"
@@ -92,6 +105,7 @@ app.post("/api/improve-prompt", async (req, res) => {
     }
 
     if (prompt.trim().length === 0) {
+      console.warn("[Server] Empty prompt");
       return res.status(400).json({
         success: false,
         error: "Prompt cannot be empty"
@@ -99,6 +113,7 @@ app.post("/api/improve-prompt", async (req, res) => {
     }
 
     if (prompt.length > 2000) {
+      console.warn("[Server] Prompt too long");
       return res.status(400).json({
         success: false,
         error: "Prompt exceeds maximum length (2000 characters)"
@@ -106,6 +121,7 @@ app.post("/api/improve-prompt", async (req, res) => {
     }
 
     if (!platform || !["chatgpt", "claude"].includes(platform)) {
+      console.warn("[Server] Invalid platform:", platform);
       return res.status(400).json({
         success: false,
         error: "Invalid platform: must be 'chatgpt' or 'claude'"
@@ -115,9 +131,11 @@ app.post("/api/improve-prompt", async (req, res) => {
     // Build system prompt for LLM orchestration
     const systemPrompt = buildSystemPrompt();
 
-    // Call OpenAI API
+    console.log("[Server] Calling OpenAI API with model: gpt-4.1-mini");
+
+    // CRITICAL FIX #2: Use gpt-4.1-mini instead of gpt-4-turbo
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
+      model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
@@ -133,19 +151,27 @@ app.post("/api/improve-prompt", async (req, res) => {
       top_p: 0.9
     });
 
+    console.log("[Server] OpenAI API response received");
+
     if (!response.choices || !response.choices[0] || !response.choices[0].message) {
+      console.error("[Server] Invalid response structure from OpenAI");
       throw new Error("Invalid response from OpenAI API");
     }
 
     const improvedPrompt = response.choices[0].message.content.trim();
 
+    console.log("[Server] Improved prompt generated, length:", improvedPrompt.length);
+
     // Validate improvement
     if (improvedPrompt.length < 5) {
+      console.warn("[Server] Generated prompt too short");
       return res.status(500).json({
         success: false,
         error: "Generated prompt is too short"
       });
     }
+
+    console.log("[Server] Validation passed, sending response");
 
     // Return response
     res.json({
@@ -155,23 +181,36 @@ app.post("/api/improve-prompt", async (req, res) => {
     });
   } catch (error) {
     console.error("[Server] Error in /api/improve-prompt:", error.message);
+    console.error("[Server] Error details:", {
+      status: error.status,
+      code: error.code,
+      type: error.type
+    });
 
     // Map technical errors to user-friendly messages
     let statusCode = 500;
     let message = "Failed to improve prompt. Please try again.";
 
-    if (error.status === 401) {
+    if (error.status === 401 || error.code === "invalid_api_key") {
       statusCode = 401;
-      message = "Authentication error with OpenAI API";
+      message = "API authentication error. Please check your API key.";
+      console.error("[Server] API key issue");
     } else if (error.status === 429) {
       statusCode = 429;
-      message = "Rate limited by OpenAI API. Please try again later.";
+      message = "Rate limited by OpenAI. Please try again later.";
+      console.error("[Server] Rate limited by OpenAI");
+    } else if (error.code === "model_not_found") {
+      statusCode = 400;
+      message = "Model not available. Please check configuration.";
+      console.error("[Server] Model not found");
     } else if (error.message && error.message.includes("timeout")) {
       statusCode = 504;
       message = "Request timed out. Please try again.";
+      console.error("[Server] Request timeout");
     } else if (error.message && error.message.includes("network")) {
       statusCode = 503;
       message = "Network error. Please try again later.";
+      console.error("[Server] Network error");
     }
 
     res.status(statusCode).json({
@@ -245,6 +284,8 @@ app.listen(PORT, () => {
   console.log(`[FixMyPrompt Server] Improve prompt: POST /api/improve-prompt`);
   console.log(`[FixMyPrompt Server] Environment: ${NODE_ENV}`);
   console.log(`[FixMyPrompt Server] CORS: Allowing all chrome-extension:// origins`);
+  console.log(`[FixMyPrompt Server] Trust proxy: ENABLED (for rate limiting)`);
+  console.log(`[FixMyPrompt Server] Model: gpt-4.1-mini`);
 
   // Verify API key is set
   if (!process.env.OPENAI_API_KEY) {
@@ -253,6 +294,8 @@ app.listen(PORT, () => {
     );
     process.exit(1);
   }
+
+  console.log("[FixMyPrompt Server] API key is configured");
 });
 
 module.exports = app;
