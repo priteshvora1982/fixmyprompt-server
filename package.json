@@ -1,0 +1,16 @@
+{
+  "name": "fixmyprompt-server",
+  "version": "0.1.0",
+  "description": "Backend proxy server for FixMyPrompt Chrome extension",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "express-rate-limit": "^7.1.5",
+    "openai": "^4.24.0"
+  }
+}
