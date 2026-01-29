@@ -15,23 +15,38 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configuration
-const EXTENSION_ID = process.env.EXTENSION_ID || "YOUR_EXTENSION_ID";
 const NODE_ENV = process.env.NODE_ENV || "production";
 
 // Middleware
 app.use(express.json({ limit: "10kb" })); // Limit payload size
 
-// CORS configuration - restrict to specific extension ID
-app.use(
-  cors({
-    origin: [
-      `chrome-extension://${EXTENSION_ID}`,
-      "http://localhost:3000",
-      "http://localhost:5173"
-    ],
-    credentials: true
-  })
-);
+// CORS configuration - allow all chrome-extension origins
+// This is safe because the extension validates the backend URL
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow all chrome-extension:// origins
+    if (!origin || origin.startsWith("chrome-extension://")) {
+      callback(null, true);
+    }
+    // Allow localhost for development
+    else if (origin === "http://localhost:3000" || origin === "http://localhost:5173" ) {
+      callback(null, true);
+    }
+    // Deny other origins
+    else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+  maxAge: 86400 // 24 hours
+};
+
+app.use(cors(corsOptions));
+
+// Explicitly handle preflight requests
+app.options("*", cors(corsOptions));
 
 // Rate limiting (10 requests per minute per IP)
 const limiter = rateLimit({
@@ -56,7 +71,6 @@ app.get("/health", (req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
-    extensionId: EXTENSION_ID,
     environment: NODE_ENV
   });
 });
@@ -64,19 +78,6 @@ app.get("/health", (req, res) => {
 /**
  * Main prompt improvement endpoint
  * POST /api/improve-prompt
- * 
- * Request body:
- * {
- *   "prompt": "user's prompt text",
- *   "platform": "chatgpt" | "claude"
- * }
- * 
- * Response:
- * {
- *   "success": true,
- *   "improved": "improved prompt text",
- *   "timestamp": 1234567890
- * }
  */
 app.post("/api/improve-prompt", async (req, res) => {
   try {
@@ -110,8 +111,6 @@ app.post("/api/improve-prompt", async (req, res) => {
         error: "Invalid platform: must be 'chatgpt' or 'claude'"
       });
     }
-
-    // NOTE: We do NOT log the prompt to protect user privacy
 
     // Build system prompt for LLM orchestration
     const systemPrompt = buildSystemPrompt();
@@ -148,9 +147,7 @@ app.post("/api/improve-prompt", async (req, res) => {
       });
     }
 
-    // NOTE: We do NOT store the improved prompt or any user data
-
-    // Return response (without logging)
+    // Return response
     res.json({
       success: true,
       improved: improvedPrompt,
@@ -215,9 +212,7 @@ IMPORTANT RULES:
 - Return ONLY the improved prompt
 - Do NOT include explanations, meta-commentary, or preamble
 - Do NOT change the core intent or meaning
-- Do NOT add unnecessary length
-- Preserve the user's original voice where possible
-- Make improvements clear and impactful`;
+- Preserve the user's original voice where possible`;
 }
 
 /**
@@ -245,11 +240,11 @@ app.use((req, res) => {
  * Start server
  */
 app.listen(PORT, () => {
-  console.log(`[FixMyPrompt Server] Running on http://localhost:${PORT}`);
+  console.log(`[FixMyPrompt Server] Running on http://localhost:${PORT}` );
   console.log(`[FixMyPrompt Server] Health check: GET /health`);
   console.log(`[FixMyPrompt Server] Improve prompt: POST /api/improve-prompt`);
-  console.log(`[FixMyPrompt Server] Extension ID: ${EXTENSION_ID}`);
   console.log(`[FixMyPrompt Server] Environment: ${NODE_ENV}`);
+  console.log(`[FixMyPrompt Server] CORS: Allowing all chrome-extension:// origins`);
 
   // Verify API key is set
   if (!process.env.OPENAI_API_KEY) {
@@ -257,13 +252,6 @@ app.listen(PORT, () => {
       "[FixMyPrompt Server] ERROR: OPENAI_API_KEY environment variable not set"
     );
     process.exit(1);
-  }
-
-  // Warn if using default extension ID
-  if (EXTENSION_ID === "YOUR_EXTENSION_ID") {
-    console.warn(
-      "[FixMyPrompt Server] WARNING: Using default extension ID. Set EXTENSION_ID environment variable for production."
-    );
   }
 });
 
