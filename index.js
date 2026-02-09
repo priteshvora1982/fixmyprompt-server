@@ -401,6 +401,41 @@ const DOMAIN_QUESTIONS = {
       ]
     }
   ]
+  general: [
+    {
+      id: 'q1',
+      text: 'What is your main goal with this prompt?',
+      answers: [
+        { label: 'Get specific information', value: 'info' },
+        { label: 'Generate creative content', value: 'creative' },
+        { label: 'Solve a problem', value: 'problem' },
+        { label: 'Learn something new', value: 'learn' },
+        { label: 'Other', value: 'other' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'Who will use the response?',
+      answers: [
+        { label: 'Just me', value: 'personal' },
+        { label: 'My team/group', value: 'team' },
+        { label: 'General audience', value: 'audience' },
+        { label: 'Professional use', value: 'professional' },
+        { label: 'Other', value: 'other' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What level of detail do you need?',
+      answers: [
+        { label: 'Brief/concise', value: 'brief' },
+        { label: 'Moderate detail', value: 'moderate' },
+        { label: 'Comprehensive/detailed', value: 'detailed' },
+        { label: 'Very technical', value: 'technical' },
+        { label: 'Simple/beginner-friendly', value: 'simple' }
+      ]
+    }
+  ]
 };
 
 function generateQuestions(domain) {
