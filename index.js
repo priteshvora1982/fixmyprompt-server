@@ -400,7 +400,7 @@ const DOMAIN_QUESTIONS = {
         { label: 'No specific timeline', value: 'flexible' }
       ]
     }
-  ]
+  ],
   general: [
     {
       id: 'q1',
