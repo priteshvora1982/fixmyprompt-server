@@ -404,35 +404,35 @@ const DOMAIN_QUESTIONS = {
   general: [
     {
       id: 'q1',
-      text: 'What is your main goal with this prompt?',
+      text: 'What is the primary purpose of your prompt?',
       answers: [
-        { label: 'Get specific information', value: 'info' },
+        { label: 'Get factual information', value: 'factual' },
         { label: 'Generate creative content', value: 'creative' },
-        { label: 'Solve a problem', value: 'problem' },
-        { label: 'Learn something new', value: 'learn' },
-        { label: 'Other', value: 'other' }
+        { label: 'Analyze or summarize', value: 'analyze' },
+        { label: 'Get advice/recommendations', value: 'advice' },
+        { label: 'Code/technical help', value: 'technical' }
       ]
     },
     {
       id: 'q2',
-      text: 'Who will use the response?',
+      text: 'Who is your intended audience?',
       answers: [
-        { label: 'Just me', value: 'personal' },
-        { label: 'My team/group', value: 'team' },
-        { label: 'General audience', value: 'audience' },
-        { label: 'Professional use', value: 'professional' },
-        { label: 'Other', value: 'other' }
+        { label: 'Myself/personal use', value: 'personal' },
+        { label: 'General public', value: 'public' },
+        { label: 'Specific profession/experts', value: 'experts' },
+        { label: 'Beginners/non-technical', value: 'beginners' },
+        { label: 'Mixed audience', value: 'mixed' }
       ]
     },
     {
       id: 'q3',
       text: 'What level of detail do you need?',
       answers: [
-        { label: 'Brief/concise', value: 'brief' },
-        { label: 'Moderate detail', value: 'moderate' },
-        { label: 'Comprehensive/detailed', value: 'detailed' },
-        { label: 'Very technical', value: 'technical' },
-        { label: 'Simple/beginner-friendly', value: 'simple' }
+        { label: 'Brief summary (1-2 sentences)', value: 'brief' },
+        { label: 'Moderate detail (few paragraphs)', value: 'moderate' },
+        { label: 'Comprehensive/in-depth', value: 'detailed' },
+        { label: 'Step-by-step instructions', value: 'steps' },
+        { label: 'With examples/case studies', value: 'examples' }
       ]
     }
   ]
