@@ -26,10 +26,19 @@ app.use(express.json({ limit: "10kb" })); // Limit payload size
 // CORS configuration - allow all chrome-extension origins
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || origin.startsWith("chrome-extension://")) {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://chatgpt.com",
+      "https://www.chatgpt.com",
+      "https://claude.ai",
+      "https://www.claude.ai"
+    ];
+    
+    if (!origin || origin.startsWith("chrome-extension://" )) {
       callback(null, true);
     }
-    else if (origin === "http://localhost:3000" || origin === "http://localhost:5173") {
+    else if (allowedOrigins.includes(origin)) {
       callback(null, true);
     }
     else {
@@ -41,6 +50,7 @@ const corsOptions = {
   allowedHeaders: ["Content-Type"],
   maxAge: 86400
 };
+
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
