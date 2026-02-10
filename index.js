@@ -235,7 +235,7 @@ const DOMAIN_QUESTIONS = {
         { label: 'Poetry', value: 'poetry' },
         { label: 'Script/Dialogue', value: 'script' },
         { label: 'Visual/Design', value: 'visual' },
-        { label: 'Other', value: 'other' }
+        { label: 'Music/Audio', value: 'music' }
       ]
     },
     {
@@ -257,71 +257,71 @@ const DOMAIN_QUESTIONS = {
         { label: 'Humorous/Light', value: 'humorous' },
         { label: 'Inspirational', value: 'inspirational' },
         { label: 'Mysterious/Dark', value: 'dark' },
-        { label: 'Other', value: 'other' }
+        { label: 'Romantic', value: 'romantic' }
       ]
     }
   ],
   business: [
     {
       id: 'q1',
-      text: 'What is your primary objective?',
+      text: 'What is your business focus?',
       answers: [
-        { label: 'Increase sales', value: 'sales' },
-        { label: 'Improve marketing', value: 'marketing' },
-        { label: 'Optimize operations', value: 'operations' },
-        { label: 'Strategic planning', value: 'strategy' },
+        { label: 'Marketing/Sales', value: 'marketing' },
+        { label: 'Strategy/Planning', value: 'strategy' },
+        { label: 'Operations', value: 'operations' },
+        { label: 'Finance/Investment', value: 'finance' },
         { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q2',
-      text: 'What is your target market?',
+      text: 'What is your company stage?',
       answers: [
-        { label: 'B2B (Business to Business)', value: 'b2b' },
-        { label: 'B2C (Business to Consumer)', value: 'b2c' },
-        { label: 'Enterprise', value: 'enterprise' },
         { label: 'Startup', value: 'startup' },
-        { label: 'Other', value: 'other' }
+        { label: 'Growth Stage', value: 'growth' },
+        { label: 'Established', value: 'established' },
+        { label: 'Enterprise', value: 'enterprise' },
+        { label: 'Non-profit', value: 'nonprofit' }
       ]
     },
     {
       id: 'q3',
-      text: 'What industry are you in?',
+      text: 'What is your primary metric?',
       answers: [
-        { label: 'Technology', value: 'tech' },
-        { label: 'Finance', value: 'finance' },
-        { label: 'Healthcare', value: 'healthcare' },
-        { label: 'Retail', value: 'retail' },
-        { label: 'Other', value: 'other' }
+        { label: 'Revenue/Profit', value: 'revenue' },
+        { label: 'Customer Acquisition', value: 'acquisition' },
+        { label: 'Market Share', value: 'market' },
+        { label: 'Efficiency/Cost', value: 'efficiency' },
+        { label: 'Growth Rate', value: 'growth' }
       ]
     }
   ],
   academic: [
     {
       id: 'q1',
-      text: 'What type of academic work is this?',
+      text: 'What type of academic work are you doing?',
       answers: [
-        { label: 'Research paper', value: 'research' },
-        { label: 'Essay/Assignment', value: 'essay' },
+        { label: 'Research Paper', value: 'research' },
         { label: 'Thesis/Dissertation', value: 'thesis' },
-        { label: 'Study guide', value: 'study' },
+        { label: 'Essay/Assignment', value: 'essay' },
+        { label: 'Literature Review', value: 'literature' },
         { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q2',
-      text: 'What is your academic level?',
+      text: 'What academic level?',
       answers: [
-        { label: 'High school', value: 'highschool' },
         { label: 'Undergraduate', value: 'undergrad' },
-        { label: 'Graduate', value: 'graduate' },
-        { label: 'PhD', value: 'phd' },
+        { label: 'Graduate/Masters', value: 'masters' },
+        { label: 'PhD/Doctoral', value: 'phd' },
+        { label: 'Professional', value: 'professional' },
         { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q3',
-      text: 'What is your subject area?',
+      text: 'What is your field of study?',
       answers: [
         { label: 'STEM', value: 'stem' },
         { label: 'Humanities', value: 'humanities' },
@@ -334,18 +334,29 @@ const DOMAIN_QUESTIONS = {
   career: [
     {
       id: 'q1',
-      text: 'What stage of your career are you at?',
+      text: 'What is your career goal?',
       answers: [
-        { label: 'Entry-level', value: 'entry' },
-        { label: 'Mid-level', value: 'mid' },
-        { label: 'Senior', value: 'senior' },
-        { label: 'Executive', value: 'executive' },
-        { label: 'Career change', value: 'change' }
+        { label: 'Job Search', value: 'job_search' },
+        { label: 'Promotion/Growth', value: 'promotion' },
+        { label: 'Career Change', value: 'change' },
+        { label: 'Skill Development', value: 'skills' },
+        { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q2',
-      text: 'What is your industry/field?',
+      text: 'What is your experience level?',
+      answers: [
+        { label: 'Entry Level', value: 'entry' },
+        { label: 'Mid-Level', value: 'mid' },
+        { label: 'Senior', value: 'senior' },
+        { label: 'Executive', value: 'executive' },
+        { label: 'Other', value: 'other' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What industry are you in?',
       answers: [
         { label: 'Technology', value: 'tech' },
         { label: 'Finance', value: 'finance' },
@@ -353,86 +364,75 @@ const DOMAIN_QUESTIONS = {
         { label: 'Education', value: 'education' },
         { label: 'Other', value: 'other' }
       ]
-    },
-    {
-      id: 'q3',
-      text: 'What is your current goal?',
-      answers: [
-        { label: 'Land a new job', value: 'job' },
-        { label: 'Get promoted', value: 'promotion' },
-        { label: 'Career change', value: 'change' },
-        { label: 'Skill development', value: 'skills' },
-        { label: 'Other', value: 'other' }
-      ]
     }
   ],
   personal: [
     {
       id: 'q1',
-      text: 'What category does this fall into?',
+      text: 'What is your main focus?',
       answers: [
         { label: 'Health/Fitness', value: 'health' },
+        { label: 'Mental Wellness', value: 'wellness' },
+        { label: 'Personal Development', value: 'development' },
         { label: 'Relationships', value: 'relationships' },
-        { label: 'Personal growth', value: 'growth' },
-        { label: 'Hobbies/Interests', value: 'hobbies' },
-        { label: 'Other', value: 'other' }
+        { label: 'Hobbies/Interests', value: 'hobbies' }
       ]
     },
     {
       id: 'q2',
-      text: 'What is your main concern?',
+      text: 'What is your current situation?',
       answers: [
-        { label: 'Getting started', value: 'start' },
-        { label: 'Staying motivated', value: 'motivation' },
-        { label: 'Overcoming obstacles', value: 'obstacles' },
-        { label: 'Measuring progress', value: 'progress' },
+        { label: 'Just Starting', value: 'starting' },
+        { label: 'In Progress', value: 'progress' },
+        { label: 'Struggling', value: 'struggling' },
+        { label: 'Succeeding', value: 'succeeding' },
         { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q3',
-      text: 'What is your timeline?',
+      text: 'What support do you need?',
       answers: [
-        { label: 'Immediate (this week)', value: 'immediate' },
-        { label: 'Short-term (1 month)', value: 'short' },
-        { label: 'Medium-term (3 months)', value: 'medium' },
-        { label: 'Long-term (6+ months)', value: 'long' },
-        { label: 'No specific timeline', value: 'flexible' }
+        { label: 'Motivation', value: 'motivation' },
+        { label: 'Guidance/Advice', value: 'guidance' },
+        { label: 'Resources/Tools', value: 'resources' },
+        { label: 'Accountability', value: 'accountability' },
+        { label: 'Other', value: 'other' }
       ]
     }
   ],
   general: [
     {
       id: 'q1',
-      text: 'What is the primary purpose of your prompt?',
+      text: 'What is your main goal with this prompt?',
       answers: [
-        { label: 'Get factual information', value: 'factual' },
+        { label: 'Get specific information', value: 'info' },
         { label: 'Generate creative content', value: 'creative' },
-        { label: 'Analyze or summarize', value: 'analyze' },
-        { label: 'Get advice/recommendations', value: 'advice' },
-        { label: 'Code/technical help', value: 'technical' }
+        { label: 'Solve a problem', value: 'problem' },
+        { label: 'Learn something new', value: 'learn' },
+        { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q2',
-      text: 'Who is your intended audience?',
+      text: 'Who will use the response?',
       answers: [
-        { label: 'Myself/personal use', value: 'personal' },
-        { label: 'General public', value: 'public' },
-        { label: 'Specific profession/experts', value: 'experts' },
-        { label: 'Beginners/non-technical', value: 'beginners' },
-        { label: 'Mixed audience', value: 'mixed' }
+        { label: 'Just me', value: 'personal' },
+        { label: 'My team/group', value: 'team' },
+        { label: 'General audience', value: 'audience' },
+        { label: 'Professional use', value: 'professional' },
+        { label: 'Other', value: 'other' }
       ]
     },
     {
       id: 'q3',
       text: 'What level of detail do you need?',
       answers: [
-        { label: 'Brief summary (1-2 sentences)', value: 'brief' },
-        { label: 'Moderate detail (few paragraphs)', value: 'moderate' },
-        { label: 'Comprehensive/in-depth', value: 'detailed' },
-        { label: 'Step-by-step instructions', value: 'steps' },
-        { label: 'With examples/case studies', value: 'examples' }
+        { label: 'Brief/concise', value: 'brief' },
+        { label: 'Moderate detail', value: 'moderate' },
+        { label: 'Comprehensive/detailed', value: 'detailed' },
+        { label: 'Very technical', value: 'technical' },
+        { label: 'Simple/beginner-friendly', value: 'simple' }
       ]
     }
   ]
