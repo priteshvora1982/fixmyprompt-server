@@ -658,13 +658,24 @@ app.post("/api/improve-prompt", async (req, res) => {
 
           ${prompt}
           
-          ${context && context.previousPrompts && context.previousPrompts.length > 1 ? `
-          CONTEXT: This is a follow-up prompt in a conversation.
-          Previous improvements already covered: structure, guardrails, clarity.
-          Focus on: NEW aspects specific to this follow-up question.
-          Avoid: Repeating the same guardrails and structure from previous improvements.
-          Connect: Link this improvement to the conversation context about "${context.conversationTopic}".
-          ` : ''}`
+          ${context && context.previousPrompts && context.previousPrompts.length > 0 ? `
+          CONVERSATION CONTEXT (v0.2.3):
+          This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"
+          
+          PREVIOUS PROMPTS IN THIS CONVERSATION:
+          ${context.previousPrompts.map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
+          
+          CRITICAL INSTRUCTIONS - USE THIS CONTEXT:
+          1. REFERENCE the previous prompts to understand the conversation flow
+          2. BUILD ON previous improvements - don't repeat the same structure
+          3. CONNECT related topics - show how this prompt relates to earlier ones
+          4. AVOID repeating guardrails already covered in previous improvements
+          5. FOCUS on NEW aspects and follow-up questions not yet addressed
+          6. MAINTAIN consistency with tone and structure of previous improvements
+          
+          The user is exploring multiple related aspects of the same topic. Make this improvement show you understand the full conversation.
+          ` : ''}
+
                   }
       ],
       temperature: 0.3,
@@ -686,8 +697,19 @@ app.post("/api/improve-prompt", async (req, res) => {
       });
     }
 
-    // Calculate score (simple heuristic)
-    const score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
+    // Calculate score (v0.2.3 - handles both improvements and refinements)
+    let score;
+    if (refinementAnswers && Object.keys(refinementAnswers).length > 0) {
+      // For refinements: score based on quality, not length
+      const refinementBonus = Math.min(2, Object.keys(refinementAnswers).length * 0.5);
+      score = Math.min(10, 7 + refinementBonus);
+      console.log('[Improve Prompt v0.2.3] Refinement scoring - Base: 7, Bonus: ' + refinementBonus + ', Final: ' + score);
+    } else {
+      // For initial improvements: score based on length improvement
+      score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
+      console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score);
+    }
+
 
     // Generate context-aware questions (v0.2.0)
     const contextAwareQuestions = generateContextAwareQuestions(domain, context);
