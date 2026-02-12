@@ -700,8 +700,8 @@ app.post("/api/improve-prompt", async (req, res) => {
       questionsGenerated: contextAwareQuestions.length
     });
 
-    // Return response (v0.2.0 - ENHANCED with context-aware questions)
-    res.json({
+    // Return response (v0.2.2 - Enhanced with context info)
+    const responseData = {
       success: true,
       improved: improvedPrompt,
       score: parseFloat(score.toFixed(1)),
@@ -710,8 +710,24 @@ app.post("/api/improve-prompt", async (req, res) => {
       questions: contextAwareQuestions,
       // NEW in v0.2.0: context awareness indicator
       contextAware: !!context && context.previousPrompts && context.previousPrompts.length > 0
-    });
-  } catch (error) {
+    };
+    
+    // v0.2.2: Add context info for debugging
+    if (context && context.previousPrompts) {
+      responseData.contextUsed = {
+        promptCount: context.previousPrompts.length,
+        conversationTopic: context.conversationTopic || 'unknown'
+      };
+    }
+    
+    if (refinementAnswers && Object.keys(refinementAnswers).length > 0) {
+      responseData.refinementApplied = true;
+    }
+    
+    console.log('[/api/improve-prompt] Response sent - Score:', responseData.score);
+    
+    res.json(responseData);
+    } catch (error) {
     console.error("[Prompt Improvement] Error:", error.message);
 
     // Map technical errors to user-friendly messages
@@ -807,78 +823,118 @@ function generateContextAwareQuestions(domain, context) {
  * Enhanced with domain-specific and context-aware instructions
  */
 function buildSystemPrompt(domain, context, refinementAnswers) {
+  // v0.2.2 logging
+  console.log('[buildSystemPrompt] Called with domain:', domain);
+  console.log('[buildSystemPrompt] Context provided:', !!context);
+  
+  if (context && context.previousPrompts) {
+    console.log('[buildSystemPrompt] Previous prompts in context:', context.previousPrompts.length);
+    context.previousPrompts.forEach((p, idx) => {
+      console.log('[buildSystemPrompt]   Prompt ' + (idx + 1) + ': "' + p.original.substring(0, 40) + '..." (domain: ' + p.domain + ')');
+    });
+  }
   let domainSpecificInstructions = '';
 
   // Add domain-specific instructions
   if (domain === 'technical') {
     domainSpecificInstructions = `
-### Domain-Specific Guidance (Technical)
-- Focus on clarity and precision in technical concepts
-- Include relevant examples or code snippets where applicable
-- Consider performance implications
-- Emphasize best practices and industry standards`;
-  } else if (domain === 'creative') {
-    domainSpecificInstructions = `
-### Domain-Specific Guidance (Creative)
-- Enhance narrative flow and emotional impact
-- Maintain the author's unique voice and style
-- Consider audience engagement and storytelling techniques
-- Balance creativity with clarity`;
-  } else if (domain === 'business') {
-    domainSpecificInstructions = `
-### Domain-Specific Guidance (Business)
-- Focus on ROI and business impact
-- Include actionable insights and metrics
-- Consider stakeholder perspectives
-- Emphasize strategic alignment`;
-  } else if (domain === 'academic') {
-    domainSpecificInstructions = `
-### Domain-Specific Guidance (Academic)
-- Ensure academic rigor and proper citations
-- Focus on research methodology and evidence
-- Consider peer review standards
-- Maintain scholarly tone`;
-  } else if (domain === 'career') {
-    domainSpecificInstructions = `
-### Domain-Specific Guidance (Career)
-- Highlight relevant skills and achievements
-- Consider target audience (recruiters, hiring managers)
-- Emphasize professional growth and impact
-- Use industry-specific language`;
-  } else if (domain === 'personal') {
-    domainSpecificInstructions = `
-### Domain-Specific Guidance (Personal)
-- Focus on practical, actionable advice
-- Consider personal growth and well-being
-- Be empathetic and supportive
-- Provide realistic and achievable suggestions`;
-  }
+      ### Domain-Specific Guidance (Technical)
+      - Focus on clarity and precision in technical concepts
+      - Include relevant examples or code snippets where applicable
+      - Consider performance implications
+      - Emphasize best practices and industry standards`;
+    } else if (domain === 'creative') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Creative)
+      - Enhance narrative flow and emotional impact
+      - Maintain the author's unique voice and style
+      - Consider audience engagement and storytelling techniques
+      - Balance creativity with clarity`;
+    } else if (domain === 'business') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Business)
+      - Focus on ROI and business impact
+      - Include actionable insights and metrics
+      - Consider stakeholder perspectives
+      - Emphasize strategic alignment`;
+    } else if (domain === 'academic') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Academic)
+      - Ensure academic rigor and proper citations
+      - Focus on research methodology and evidence
+      - Consider peer review standards
+      - Maintain scholarly tone`;
+    } else if (domain === 'career') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Career)
+      - Highlight relevant skills and achievements
+      - Consider target audience (recruiters, hiring managers)
+      - Emphasize professional growth and impact
+      - Use industry-specific language`;
+    } else if (domain === 'personal') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Personal)
+      - Focus on practical, actionable advice
+      - Consider personal growth and well-being
+      - Be empathetic and supportive
+      - Provide realistic and achievable suggestions`;
+    }else if (domain === 'finance') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Finance)
+      - Focus on financial principles and risk management
+      - Consider investment goals and risk tolerance
+      - Include relevant financial metrics and benchmarks
+      - Emphasize long-term wealth building strategies
+      - Consider tax implications and diversification`;
+    }
 
 
   // Add context-aware instructions if context is provided (v0.2.0 - ENHANCED)
   // Add context-aware instructions if context is provided (v0.2.1 - FOLLOW-UP DETECTION)
+  // Add context-aware instructions if context is provided (v0.2.2 - REFINEMENT DETECTION)
   let contextInstructions = '';
   if (context) {
+    // Check if this is a refinement request (v0.2.2)
+    const isRefinement = refinementAnswers && Object.keys(refinementAnswers).length > 0;
+    console.log('[buildSystemPrompt] Refinement detected:', isRefinement);
+    
     // Check if this is a follow-up prompt (not the first one)
     const isFollowUp = context.previousPrompts && context.previousPrompts.length > 1;
+    console.log('[buildSystemPrompt] Follow-up detected:', isFollowUp);
     
-    if (isFollowUp) {
-      // This is a follow-up prompt - avoid repeating guardrails
+    if (isRefinement) {
+      // This is a REFINEMENT request (v0.2.2)
       contextInstructions = `
-  ### Conversational Context (Follow-up Prompt - v0.2.1)
-  This is prompt #${context.previousPrompts.length} in a conversation about: ${context.conversationTopic || 'various topics'}
-  
-  Previous prompts in this conversation:
-  ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
-  
-  CRITICAL INSTRUCTIONS FOR FOLLOW-UP PROMPTS:
-  1. Do NOT repeat guardrails/constraints already mentioned in previous improvements
-  2. Build on previous improvements - reference what was already covered
-  3. Focus on NEW aspects and follow-up questions not yet addressed
-  4. Maintain consistency with the tone and structure of previous improvements
-  5. If this is about a related topic (e.g., crypto after wealth building), explicitly connect them
-  6. Avoid regenerating the entire prompt structure - make incremental improvements
-  `;
+      ### Conversational Context (Refinement Request - v0.2.2)
+      The user is refining a previously improved prompt based on their answers to clarifying questions.
+      
+      Previous prompts:
+      ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. Original: "${p.original}"`).join('\n')}
+      
+      CRITICAL INSTRUCTIONS FOR REFINEMENT:
+      1. Do NOT repeat the guardrails or structure already added in the previous improvement
+      2. Focus on incorporating the refinement answers to make the prompt more specific
+      3. Build on the previous improvements rather than starting from scratch
+      4. Enhance the prompt based on the user's feedback and answers
+      5. Make targeted, incremental improvements based on the refinement context
+      `;
+        } else if (isFollowUp) {
+          // This is a follow-up prompt - avoid repeating guardrails
+          contextInstructions = `
+      ### Conversational Context (Follow-up Prompt - v0.2.1)
+      This is prompt #${context.previousPrompts.length} in a conversation about: ${context.conversationTopic || 'various topics'}
+      
+      Previous prompts in this conversation:
+      ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
+      
+      CRITICAL INSTRUCTIONS FOR FOLLOW-UP PROMPTS:
+      1. Do NOT repeat guardrails/constraints already mentioned in previous improvements
+      2. Build on previous improvements - reference what was already covered
+      3. Focus on NEW aspects and follow-up questions not yet addressed
+      4. Maintain consistency with the tone and structure of previous improvements
+      5. If this is about a related topic (e.g., crypto after wealth building), explicitly connect them
+      6. Avoid regenerating the entire prompt structure - make incremental improvements
+      `;
       } else {
         // First prompt - use standard context formatting
         contextInstructions = formatContextForSystemPrompt(context);
