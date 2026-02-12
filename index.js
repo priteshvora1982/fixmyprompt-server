@@ -654,8 +654,18 @@ app.post("/api/improve-prompt", async (req, res) => {
         },
         {
           role: "user",
-          content: `Improve this prompt by applying all transformation rules:\n\n${prompt}`
-        }
+          content: `Improve this prompt by applying transformation rules:
+
+          ${prompt}
+          
+          ${context && context.previousPrompts && context.previousPrompts.length > 1 ? `
+          CONTEXT: This is a follow-up prompt in a conversation.
+          Previous improvements already covered: structure, guardrails, clarity.
+          Focus on: NEW aspects specific to this follow-up question.
+          Avoid: Repeating the same guardrails and structure from previous improvements.
+          Connect: Link this improvement to the conversation context about "${context.conversationTopic}".
+          ` : ''}`
+                  }
       ],
       temperature: 0.3,
       max_tokens: 1000,
@@ -846,10 +856,34 @@ function buildSystemPrompt(domain, context, refinementAnswers) {
 
 
   // Add context-aware instructions if context is provided (v0.2.0 - ENHANCED)
+  // Add context-aware instructions if context is provided (v0.2.1 - FOLLOW-UP DETECTION)
   let contextInstructions = '';
   if (context) {
-    contextInstructions = formatContextForSystemPrompt(context);
-  }
+    // Check if this is a follow-up prompt (not the first one)
+    const isFollowUp = context.previousPrompts && context.previousPrompts.length > 1;
+    
+    if (isFollowUp) {
+      // This is a follow-up prompt - avoid repeating guardrails
+      contextInstructions = `
+  ### Conversational Context (Follow-up Prompt - v0.2.1)
+  This is prompt #${context.previousPrompts.length} in a conversation about: ${context.conversationTopic || 'various topics'}
+  
+  Previous prompts in this conversation:
+  ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
+  
+  CRITICAL INSTRUCTIONS FOR FOLLOW-UP PROMPTS:
+  1. Do NOT repeat guardrails/constraints already mentioned in previous improvements
+  2. Build on previous improvements - reference what was already covered
+  3. Focus on NEW aspects and follow-up questions not yet addressed
+  4. Maintain consistency with the tone and structure of previous improvements
+  5. If this is about a related topic (e.g., crypto after wealth building), explicitly connect them
+  6. Avoid regenerating the entire prompt structure - make incremental improvements
+  `;
+      } else {
+        // First prompt - use standard context formatting
+        contextInstructions = formatContextForSystemPrompt(context);
+      }
+    }
 
   return `You are a senior prompt engineer specializing in improving AI prompts for better outcomes.
 
