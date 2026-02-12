@@ -635,6 +635,15 @@ app.post("/api/improve-prompt", async (req, res) => {
     // Build comprehensive system prompt
     const systemPrompt = buildSystemPrompt(domain, context, refinementAnswers);
 
+    // Log request details for debugging (v0.2.0)
+    console.log(`[Improve Prompt v0.2.0] Request received:`, {
+      promptLength: prompt.length,
+      platform: platform,
+      hasDomain: !!domain,
+      hasContext: !!context,
+      contextPrompts: context?.previousPrompts?.length || 0
+    });
+
     // Call OpenAI API
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo",
@@ -670,12 +679,27 @@ app.post("/api/improve-prompt", async (req, res) => {
     // Calculate score (simple heuristic)
     const score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
 
-    // Return response
+    // Generate context-aware questions (v0.2.0)
+    const contextAwareQuestions = generateContextAwareQuestions(domain, context);
+
+    // Log success (v0.2.0)
+    console.log(`[Improve Prompt v0.2.0] Success:`, {
+      originalLength: prompt.length,
+      improvedLength: improvedPrompt.length,
+      score: score,
+      questionsGenerated: contextAwareQuestions.length
+    });
+
+    // Return response (v0.2.0 - ENHANCED with context-aware questions)
     res.json({
       success: true,
       improved: improvedPrompt,
       score: parseFloat(score.toFixed(1)),
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      // NEW in v0.2.0: context-aware questions
+      questions: contextAwareQuestions,
+      // NEW in v0.2.0: context awareness indicator
+      contextAware: !!context && context.previousPrompts && context.previousPrompts.length > 0
     });
   } catch (error) {
     console.error("[Prompt Improvement] Error:", error.message);
@@ -704,6 +728,69 @@ app.post("/api/improve-prompt", async (req, res) => {
     });
   }
 });
+
+// ============================================================================
+// CONVERSATIONAL MEMORY SERVICE (v0.2.0 - NEW)
+// ============================================================================
+
+/**
+ * Format context for system prompt integration (v0.2.0)
+ * Converts accumulated context into readable instructions for the LLM
+ */
+function formatContextForSystemPrompt(context) {
+  if (!context) {
+    return '';
+  }
+
+  let contextSection = '\n### Conversational Context (v0.2.0)\n';
+  
+  // Add conversation topic
+  if (context.conversationTopic) {
+    contextSection += `The user is working on: **${context.conversationTopic}**\n`;
+  }
+
+  // Add key details
+  if (context.keyDetails && context.keyDetails.length > 0) {
+    contextSection += `Key details from the conversation: ${context.keyDetails.join(', ')}\n`;
+  }
+
+  // Add previous prompts summary
+  if (context.previousPrompts && context.previousPrompts.length > 0) {
+    contextSection += `\nPrevious prompts in this conversation:\n`;
+    context.previousPrompts.slice(-3).forEach((p, idx) => {
+      contextSection += `${idx + 1}. "${p.original}"\n`;
+    });
+    contextSection += `\nConsider this conversation history when improving the current prompt. Ensure consistency with previous improvements and avoid repeating the same suggestions.\n`;
+  }
+
+  // Add questions already asked
+  if (context.questionsAsked && context.questionsAsked.length > 0) {
+    contextSection += `\nQuestions already asked in this conversation: ${context.questionsAsked.join(', ')}\n`;
+    contextSection += `Avoid asking these questions again.\n`;
+  }
+
+  return contextSection;
+}
+
+/**
+ * Generate context-aware questions (v0.2.0)
+ * Filters out questions already asked and prioritizes based on context
+ */
+function generateContextAwareQuestions(domain, context) {
+  const baseQuestions = generateQuestions(domain);
+  
+  if (!context || !context.questionsAsked) {
+    return baseQuestions;
+  }
+
+  // Filter out questions already asked
+  const filteredQuestions = baseQuestions.filter(q => {
+    return !context.questionsAsked.includes(q.text);
+  });
+
+  return filteredQuestions.length > 0 ? filteredQuestions : baseQuestions;
+}
+
 
 /**
  * Build comprehensive system prompt for LLM orchestration
@@ -757,13 +844,11 @@ function buildSystemPrompt(domain, context, refinementAnswers) {
 - Provide realistic and achievable suggestions`;
   }
 
-  // Add context-aware instructions if context is provided
+
+  // Add context-aware instructions if context is provided (v0.2.0 - ENHANCED)
   let contextInstructions = '';
-  if (context && context.chainOfReasoning) {
-    contextInstructions = `
-### Context Awareness
-The user is working on: ${context.chainOfReasoning}
-Consider this context when improving the prompt.`;
+  if (context) {
+    contextInstructions = formatContextForSystemPrompt(context);
   }
 
   return `You are a senior prompt engineer specializing in improving AI prompts for better outcomes.
@@ -866,22 +951,26 @@ app.use((req, res) => {
 // ============================================================================
 
 app.listen(PORT, () => {
-  console.log(`[FixMyPrompt Server v1.5] Running on http://localhost:${PORT}`);
-  console.log(`[FixMyPrompt Server v1.5] Health check: GET /health`);
-  console.log(`[FixMyPrompt Server v1.5] Endpoints:`);
+  console.log(`[FixMyPrompt Server v0.2.0] Running on http://localhost:${PORT}` );
+  console.log(`[FixMyPrompt Server v0.2.0] Endpoints:`);
   console.log(`  - POST /api/detect-domain (v1.5)`);
   console.log(`  - POST /api/generate-questions (v1.5)`);
   console.log(`  - POST /api/context (v1.5)`);
   console.log(`  - GET /api/context/:conversationId (v1.5)`);
-  console.log(`  - POST /api/improve-prompt (v1.0 - backward compatible)`);
-  console.log(`[FixMyPrompt Server v1.5] Environment: ${NODE_ENV}`);
-  console.log(`[FixMyPrompt Server v1.5] Model: gpt-4-turbo`);
-  console.log(`[FixMyPrompt Server v1.5] CORS: Allowing all chrome-extension:// origins`);
+  console.log(`  - POST /api/improve-prompt (v0.2.0 - ENHANCED with conversational memory)`);
+  console.log(`[FixMyPrompt Server v0.2.0] Features:`);
+  console.log(`  ✅ Backward compatible (old requests work without changes)`);
+  console.log(`  ✅ Conversational memory integration (v0.2.0)`);
+  console.log(`  ✅ Context-aware questions (v0.2.0)`);
+  console.log(`  ✅ Context-aware system prompts (v0.2.0)`);
+  console.log(`[FixMyPrompt Server v0.2.0] Environment: ${NODE_ENV}`);
+  console.log(`[FixMyPrompt Server v0.2.0] Model: gpt-4-turbo`);
+  console.log(`[FixMyPrompt Server v0.2.0] CORS: Allowing all chrome-extension:// origins`);
 
   // Verify API key is set
   if (!process.env.OPENAI_API_KEY) {
     console.error(
-      "[FixMyPrompt Server v1.5] ERROR: OPENAI_API_KEY environment variable not set"
+      "[FixMyPrompt Server v0.2.0] ERROR: OPENAI_API_KEY environment variable not set"
     );
     process.exit(1);
   }
