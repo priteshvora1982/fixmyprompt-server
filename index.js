@@ -654,29 +654,8 @@ app.post("/api/improve-prompt", async (req, res) => {
         },
         {
           role: "user",
-          content: `Improve this prompt by applying transformation rules:
-
-          ${prompt}
-          
-          ${context && context.previousPrompts && context.previousPrompts.length > 0 ? `
-          CONVERSATION CONTEXT (v0.2.3):
-          This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"
-          
-          PREVIOUS PROMPTS IN THIS CONVERSATION:
-          ${context.previousPrompts.map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
-          
-          CRITICAL INSTRUCTIONS - USE THIS CONTEXT:
-          1. REFERENCE the previous prompts to understand the conversation flow
-          2. BUILD ON previous improvements - don't repeat the same structure
-          3. CONNECT related topics - show how this prompt relates to earlier ones
-          4. AVOID repeating guardrails already covered in previous improvements
-          5. FOCUS on NEW aspects and follow-up questions not yet addressed
-          6. MAINTAIN consistency with tone and structure of previous improvements
-          
-          The user is exploring multiple related aspects of the same topic. Make this improvement show you understand the full conversation.
-          ` : ''}
-
-                  }
+          content: buildUserMessage(prompt, context)
+        }        
       ],
       temperature: 0.3,
       max_tokens: 1000,
@@ -839,6 +818,36 @@ function generateContextAwareQuestions(domain, context) {
   return filteredQuestions.length > 0 ? filteredQuestions : baseQuestions;
 }
 
+/**
+ * Build user message with context (v0.2.3)
+ */
+function buildUserMessage(prompt, context) {
+  let message = `Improve this prompt by applying transformation rules:
+
+  ${prompt}`;
+
+  if (context && context.previousPrompts && context.previousPrompts.length > 0) {
+    message += `
+
+    CONVERSATION CONTEXT (v0.2.3):
+    This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"
+    
+    PREVIOUS PROMPTS IN THIS CONVERSATION:
+    ${context.previousPrompts.map((p, i) => (i+1) + '. "' + p.original + '"').join('\n')}
+    
+    CRITICAL INSTRUCTIONS - USE THIS CONTEXT:
+    1. REFERENCE the previous prompts to understand the conversation flow
+    2. BUILD ON previous improvements - don't repeat the same structure
+    3. CONNECT related topics - show how this prompt relates to earlier ones
+    4. AVOID repeating guardrails already covered in previous improvements
+    5. FOCUS on NEW aspects and follow-up questions not yet addressed
+    6. MAINTAIN consistency with tone and structure of previous improvements
+    
+    The user is exploring multiple related aspects of the same topic. Make this improvement show you understand the full conversation.`;
+      }
+
+  return message;
+}
 
 /**
  * Build comprehensive system prompt for LLM orchestration
