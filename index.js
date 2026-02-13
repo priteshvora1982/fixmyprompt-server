@@ -683,21 +683,12 @@ app.post("/api/improve-prompt", async (req, res) => {
       const refinementBonus = Math.min(2, Object.keys(refinementAnswers).length * 0.5);
       score = Math.min(10, 7 + refinementBonus);
       console.log('[Improve Prompt v0.2.3] Refinement scoring - Base: 7, Bonus: ' + refinementBonus + ', Final: ' + score);
-    } else {
-          // Calculate score (v0.2.3 - handles both improvements and refinements)
-          let score;
-          if (refinementAnswers && Object.keys(refinementAnswers).length > 0) {
-            // For refinements: score based on quality, not length
-            const refinementBonus = Math.min(2, Object.keys(refinementAnswers).length * 0.5);
-            score = Math.min(10, 7 + refinementBonus);
-            console.log('[Improve Prompt v0.2.3] Refinement scoring - Base: 7, Bonus: ' + refinementBonus.toFixed(1) + ', Final: ' + score.toFixed(1));
-          } else {
-            // For initial improvements: score based on length improvement
-            score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
-            console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score.toFixed(1));
-          }
-      console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score);
-    }
+      } else {
+        // For initial improvements: score based on length improvement
+        score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
+        console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score.toFixed(1));
+      }
+
 
 
     // Generate context-aware questions (v0.2.0)
