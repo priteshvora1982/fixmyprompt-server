@@ -132,6 +132,10 @@ const DOMAIN_KEYWORDS = {
     keywords: ['business', 'marketing', 'sales', 'strategy', 'revenue', 'customer', 'product', 'market', 'growth', 'roi', 'profit', 'investment', 'startup', 'entrepreneur', 'brand', 'campaign', 'analytics', 'metrics'],
     weight: 1.0
   },
+  finance: {
+    keywords: ['billionaire', 'millionaire', 'wealth', 'financial', 'investment', 'money', 'income', 'earn', 'accumulate', 'portfolio', 'stock', 'crypto', 'trading', 'passive income', 'financial independence', 'net worth', 'asset', 'capital', 'dividend', 'return', 'yield', 'rich', 'wealthy'],
+    weight: 1.2
+  },
   academic: {
     keywords: ['research', 'paper', 'study', 'analysis', 'theory', 'hypothesis', 'experiment', 'data', 'conclusion', 'literature', 'academic', 'education', 'learning', 'course', 'thesis', 'essay'],
     weight: 1.0
@@ -828,28 +832,40 @@ function buildUserMessage(prompt, context) {
   ${prompt}`;
 
   if (context && context.previousPrompts && context.previousPrompts.length > 0) {
+    // Include conversation history if available (v0.2.4)
+    let conversationContext = '';
+    if (context.conversationHistory && context.conversationHistory.length > 0) {
+      const recentMessages = context.conversationHistory.slice(-5);
+      conversationContext = `
+    RECENT CONVERSATION HISTORY:
+    ${recentMessages.map(msg => `**${msg.role === 'user' ? 'User' : 'Assistant'}**: ${msg.content.substring(0, 100)}...`).join('\n')}`;
+    }
+    
     message += `
 
-    CONVERSATION CONTEXT (v0.2.3):
-    This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"
+    CONVERSATION CONTEXT (v0.2.4):
+    This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"${conversationContext}
     
     PREVIOUS PROMPTS IN THIS CONVERSATION:
     ${context.previousPrompts.map((p, i) => (i+1) + '. "' + p.original + '"').join('\n')}
     
-    CRITICAL INSTRUCTIONS - USE THIS CONTEXT (v0.2.3):
-    1. REFERENCE the previous prompts to understand the FULL conversation flow
-    2. BUILD ON previous improvements - do NOT repeat the same structure or guardrails
-    3. CONNECT related topics - explicitly show how THIS prompt relates to earlier ones
-    4. AVOID repeating guardrails already covered in previous improvements
-    5. FOCUS on NEW aspects and follow-up questions not yet addressed
-    6. MAINTAIN consistency with tone and structure of previous improvements
-    7. SHOW UNDERSTANDING: Demonstrate you understand the user is exploring multiple related aspects of the same topic
+      KEY TOPICS DISCUSSED: ${context.keyDetails ? context.keyDetails.slice(0, 10).join(', ') : 'N/A'}
     
-    The user is building on previous context. Make this improvement show you understand the full conversation and build on it.`;
+      CRITICAL INSTRUCTIONS - USE THIS CONTEXT (v0.2.4):
+      1. REFERENCE the previous prompts to understand the FULL conversation flow
+      2. BUILD ON previous improvements - do NOT repeat the same structure or guardrails
+      3. CONNECT related topics - explicitly show how THIS prompt relates to earlier ones
+      4. AVOID repeating guardrails already covered in previous improvements
+      5. FOCUS on NEW aspects and follow-up questions not yet addressed
+      6. MAINTAIN consistency with tone and structure of previous improvements
+      7. SHOW UNDERSTANDING: Demonstrate you understand the user is exploring multiple related aspects of the same topic
+      8. USE CONVERSATION HISTORY: Reference the actual conversation flow to show context awareness
+      
+      The user is building on previous context. Make this improvement show you understand the full conversation and build on it.`;
       }
 
-  return message;
-}
+    return message;
+  }
 
 /**
  * Build comprehensive system prompt for LLM orchestration
