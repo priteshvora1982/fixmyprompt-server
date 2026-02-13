@@ -684,8 +684,18 @@ app.post("/api/improve-prompt", async (req, res) => {
       score = Math.min(10, 7 + refinementBonus);
       console.log('[Improve Prompt v0.2.3] Refinement scoring - Base: 7, Bonus: ' + refinementBonus + ', Final: ' + score);
     } else {
-      // For initial improvements: score based on length improvement
-      score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
+          // Calculate score (v0.2.3 - handles both improvements and refinements)
+          let score;
+          if (refinementAnswers && Object.keys(refinementAnswers).length > 0) {
+            // For refinements: score based on quality, not length
+            const refinementBonus = Math.min(2, Object.keys(refinementAnswers).length * 0.5);
+            score = Math.min(10, 7 + refinementBonus);
+            console.log('[Improve Prompt v0.2.3] Refinement scoring - Base: 7, Bonus: ' + refinementBonus.toFixed(1) + ', Final: ' + score.toFixed(1));
+          } else {
+            // For initial improvements: score based on length improvement
+            score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
+            console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score.toFixed(1));
+          }
       console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score);
     }
 
@@ -835,15 +845,16 @@ function buildUserMessage(prompt, context) {
     PREVIOUS PROMPTS IN THIS CONVERSATION:
     ${context.previousPrompts.map((p, i) => (i+1) + '. "' + p.original + '"').join('\n')}
     
-    CRITICAL INSTRUCTIONS - USE THIS CONTEXT:
-    1. REFERENCE the previous prompts to understand the conversation flow
-    2. BUILD ON previous improvements - don't repeat the same structure
-    3. CONNECT related topics - show how this prompt relates to earlier ones
+    CRITICAL INSTRUCTIONS - USE THIS CONTEXT (v0.2.3):
+    1. REFERENCE the previous prompts to understand the FULL conversation flow
+    2. BUILD ON previous improvements - do NOT repeat the same structure or guardrails
+    3. CONNECT related topics - explicitly show how THIS prompt relates to earlier ones
     4. AVOID repeating guardrails already covered in previous improvements
     5. FOCUS on NEW aspects and follow-up questions not yet addressed
     6. MAINTAIN consistency with tone and structure of previous improvements
+    7. SHOW UNDERSTANDING: Demonstrate you understand the user is exploring multiple related aspects of the same topic
     
-    The user is exploring multiple related aspects of the same topic. Make this improvement show you understand the full conversation.`;
+    The user is building on previous context. Make this improvement show you understand the full conversation and build on it.`;
       }
 
   return message;
