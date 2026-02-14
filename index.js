@@ -715,7 +715,9 @@ app.post("/api/improve-prompt", async (req, res) => {
       // NEW in v0.2.0: context-aware questions
       questions: contextAwareQuestions,
       // NEW in v0.2.0: context awareness indicator
-      contextAware: !!context && context.previousPrompts && context.previousPrompts.length > 0
+      contextAware: !!context && context.previousPrompts && context.previousPrompts.length > 0,
+      // NEW in v0.2.6: flag to indicate if this is a refinement
+      isRefinement: refinementAnswers && Object.keys(refinementAnswers).length > 0
     };
     
     // v0.2.2: Add context info for debugging
