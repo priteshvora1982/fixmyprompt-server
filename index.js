@@ -196,6 +196,41 @@ function detectDomain(prompt) {
 // ============================================================================
 
 const DOMAIN_QUESTIONS = {
+  finance: [
+    {
+      id: 'q1',
+      text: 'What is your primary financial goal?',
+      answers: [
+        { label: 'Wealth accumulation', value: 'wealth' },
+        { label: 'Investment strategy', value: 'investment' },
+        { label: 'Financial independence', value: 'independence' },
+        { label: 'Passive income', value: 'passive' },
+        { label: 'Risk management', value: 'risk' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is your investment experience level?',
+      answers: [
+        { label: 'Beginner', value: 'beginner' },
+        { label: 'Intermediate', value: 'intermediate' },
+        { label: 'Advanced', value: 'advanced' },
+        { label: 'Expert', value: 'expert' },
+        { label: 'Not investing yet', value: 'none' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What financial areas interest you?',
+      answers: [
+        { label: 'Stocks/Equities', value: 'stocks' },
+        { label: 'Cryptocurrency', value: 'crypto' },
+        { label: 'Real Estate', value: 'realestate' },
+        { label: 'Bonds/Fixed Income', value: 'bonds' },
+        { label: 'Diversified Portfolio', value: 'diversified' }
+      ]
+    }
+  ],
   technical: [
     {
       id: 'q1',
