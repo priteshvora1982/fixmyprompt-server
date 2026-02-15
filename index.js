@@ -878,17 +878,30 @@ function buildUserMessage(prompt, context) {
     ${recentMessages.map(msg => `**${msg.role === 'user' ? 'User' : 'Assistant'}**: ${msg.content.substring(0, 100)}...`).join('\n')}`;
     }
     
+    // Include last improvement as baseline context (v0.2.5 - INCREMENTAL CONTEXT)
+    let lastImprovementContext = '';
+    if (context.lastImprovement && context.lastImprovement.improvedText) {
+      lastImprovementContext = `
+
+    PREVIOUS IMPROVEMENT (BASELINE CONTEXT - v0.2.5):
+    Score from previous improvement: ${context.lastImprovement.improvedScore || 'N/A'}/10
+    Previous improved prompt:
+    "${context.lastImprovement.improvedText}"
+    
+    CRITICAL: This is what we already improved. Build on this knowledge. Do NOT repeat the same improvements or guardrails.`;
+    }
+    
     message += `
 
-    CONVERSATION CONTEXT (v0.2.4):
-    This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"${conversationContext}
+    CONVERSATION CONTEXT (v0.2.5):
+    This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"${conversationContext}${lastImprovementContext}
     
     PREVIOUS PROMPTS IN THIS CONVERSATION:
     ${context.previousPrompts.map((p, i) => (i+1) + '. "' + p.original + '"').join('\n')}
     
       KEY TOPICS DISCUSSED: ${context.keyDetails ? context.keyDetails.slice(0, 10).join(', ') : 'N/A'}
     
-      CRITICAL INSTRUCTIONS - USE THIS CONTEXT (v0.2.4):
+      CRITICAL INSTRUCTIONS - USE THIS CONTEXT (v0.2.5):
       1. REFERENCE the previous prompts to understand the FULL conversation flow
       2. BUILD ON previous improvements - do NOT repeat the same structure or guardrails
       3. CONNECT related topics - explicitly show how THIS prompt relates to earlier ones
@@ -897,6 +910,7 @@ function buildUserMessage(prompt, context) {
       6. MAINTAIN consistency with tone and structure of previous improvements
       7. SHOW UNDERSTANDING: Demonstrate you understand the user is exploring multiple related aspects of the same topic
       8. USE CONVERSATION HISTORY: Reference the actual conversation flow to show context awareness
+      9. USE BASELINE CONTEXT: Reference the previous improvement to show you understand what was already improved
       
       The user is building on previous context. Make this improvement show you understand the full conversation and build on it.`;
       }
