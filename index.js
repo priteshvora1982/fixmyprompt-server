@@ -981,61 +981,41 @@ function buildSystemPrompt(domain, context, refinementAnswers) {
         5. Make targeted, incremental improvements based on the refinement context
         `;
       } else if (isFollowUp) {
-          // This is a follow-up prompt - CONSOLIDATE and REFERENCE previous prompts
-          const previousPromptsText = context.previousPrompts
-            .map((p, i) => `${i+1}. "${p.original}" (domain: ${p.domain})`)
-            .join('\n');
+          // ===== EARLY RETURN FOR FOLLOW-UPS (v1.6) =====
+          // For follow-up prompts, return a consolidation-focused system prompt
+          // and skip the standard transformation rules
+          console.log('[SERVER] FOLLOW-UP MODE: Returning consolidation prompt (skipping transformation rules)');
+          return `You are an expert prompt consolidation specialist.
+
+          The user has been having a multi-turn conversation and is now asking for a follow-up or consolidation.
           
-          contextInstructions = `
-          ### Conversational Context (Follow-up Prompt - v1.6 CONTEXT-AWARE)
-          This is prompt #${context.previousPrompts.length + 1} in a conversation about: ${context.conversationTopic || 'various topics'}
+          ## CONTEXT
+          Topic: ${context.conversationTopic || 'various topics'}
           
-          Previous prompts in this conversation:
-          ${previousPromptsText}
-      
-          CRITICAL INSTRUCTIONS FOR FOLLOW-UP PROMPTS (v1.6):
-          1. **INCORPORATE CONTEXT**: Reference and build upon the previous prompts
-          2. **CONSOLIDATE**: Bring together the themes from previous prompts
-          3. **CONNECT TOPICS**: Show how the current prompt relates to previous ones
-          4. **ADD SPECIFICITY**: Use details from previous prompts to make it more targeted
-          5. **MAINTAIN CONSISTENCY**: Keep the same tone and style
-          6. Do NOT return generic templates
-          7. Do NOT ignore the previous prompts
-          8. Show deep understanding of the conversation
-          `;
+          Previous prompts:
+          ${context.previousPrompts.map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
+          
+          ## YOUR TASK
+          Improve the current prompt by:
+          1. **INCORPORATING CONTEXT**: Reference and build upon the previous prompts
+          2. **CONSOLIDATING**: Bring together the themes from previous prompts
+          3. **CONNECTING TOPICS**: Show how the current prompt relates to previous ones
+          4. **ADDING SPECIFICITY**: Use details from previous prompts to make it more targeted
+          5. **MAINTAINING CONSISTENCY**: Keep the same tone and style
+          
+          ## CRITICAL RULES
+          - Do NOT ignore the previous prompts
+          - Do NOT return generic templates with Goal/Objective/Context/Constraints sections
+          - DO show deep understanding of the conversation
+          - DO reference specific topics from previous prompts
+          - Return ONLY the improved prompt`;
       } else {
         // First prompt - use standard context formatting
         contextInstructions = formatContextForSystemPrompt(context);
       }
     }
 
-  if (isFollowUp) {
-    console.log('[SERVER] FOLLOW-UP MODE: Returning consolidation prompt (skipping transformation rules)');
-    return `You are an expert prompt consolidation specialist.
-
-    The user has been having a multi-turn conversation and is now asking for a follow-up or consolidation.
-    
-    ## CONTEXT
-    Topic: ${context.conversationTopic || 'various topics'}
-    
-    Previous prompts:
-    ${context.previousPrompts.map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
-    
-    ## YOUR TASK
-    Improve the current prompt by:
-    1. **INCORPORATING CONTEXT**: Reference and build upon the previous prompts
-    2. **CONSOLIDATING**: Bring together the themes from previous prompts
-    3. **CONNECTING TOPICS**: Show how the current prompt relates to previous ones
-    4. **ADDING SPECIFICITY**: Use details from previous prompts to make it more targeted
-    5. **MAINTAINING CONSISTENCY**: Keep the same tone and style
-    
-    ## CRITICAL RULES
-    - Do NOT ignore the previous prompts
-    - Do NOT return generic templates with Goal/Objective/Context/Constraints sections
-    - DO show deep understanding of the conversation
-    - DO reference specific topics from previous prompts
-    - Return ONLY the improved prompt`;
-  }
+  
 
 
   
