@@ -864,59 +864,21 @@ function generateContextAwareQuestions(domain, context) {
  * Build user message with context (v0.2.3)
  */
 function buildUserMessage(prompt, context) {
-  let message = `Improve this prompt by applying transformation rules:
-
+  let message = `Improve this prompt:
   ${prompt}`;
-
   if (context && context.previousPrompts && context.previousPrompts.length > 0) {
-    // Include conversation history if available (v0.2.4)
-    let conversationContext = '';
-    if (context.conversationHistory && context.conversationHistory.length > 0) {
-      const recentMessages = context.conversationHistory.slice(-5);
-      conversationContext = `
-    RECENT CONVERSATION HISTORY:
-    ${recentMessages.map(msg => `**${msg.role === 'user' ? 'User' : 'Assistant'}**: ${msg.content.substring(0, 100)}...`).join('\n')}`;
-    }
-    
-    // Include last improvement as baseline context (v0.2.5 - INCREMENTAL CONTEXT)
-    let lastImprovementContext = '';
-    if (context.lastImprovement && context.lastImprovement.improvedText) {
-      lastImprovementContext = `
-
-    PREVIOUS IMPROVEMENT (BASELINE CONTEXT - v0.2.5):
-    Score from previous improvement: ${context.lastImprovement.improvedScore || 'N/A'}/10
-    Previous improved prompt:
-    "${context.lastImprovement.improvedText}"
-    
-    CRITICAL: This is what we already improved. Build on this knowledge. Do NOT repeat the same improvements or guardrails.`;
-    }
-    
     message += `
 
-    CONVERSATION CONTEXT (v0.2.5):
-    This is prompt #${context.previousPrompts.length} in a conversation about: "${context.conversationTopic || 'various topics'}"${conversationContext}${lastImprovementContext}
+    CONVERSATION CONTEXT:
+    This is prompt #${context.previousPrompts.length + 1} about: "${context.conversationTopic || 'various topics'}"
     
-    PREVIOUS PROMPTS IN THIS CONVERSATION:
-    ${context.previousPrompts.map((p, i) => (i+1) + '. "' + p.original + '"').join('\n')}
+    Previous prompts:
+    ${context.previousPrompts.map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
     
-      KEY TOPICS DISCUSSED: ${context.keyDetails ? context.keyDetails.slice(0, 10).join(', ') : 'N/A'}
-    
-      CRITICAL INSTRUCTIONS - USE THIS CONTEXT (v0.2.5):
-      1. REFERENCE the previous prompts to understand the FULL conversation flow
-      2. BUILD ON previous improvements - do NOT repeat the same structure or guardrails
-      3. CONNECT related topics - explicitly show how THIS prompt relates to earlier ones
-      4. AVOID repeating guardrails already covered in previous improvements
-      5. FOCUS on NEW aspects and follow-up questions not yet addressed
-      6. MAINTAIN consistency with tone and structure of previous improvements
-      7. SHOW UNDERSTANDING: Demonstrate you understand the user is exploring multiple related aspects of the same topic
-      8. USE CONVERSATION HISTORY: Reference the actual conversation flow to show context awareness
-      9. USE BASELINE CONTEXT: Reference the previous improvement to show you understand what was already improved
-      
-      The user is building on previous context. Make this improvement show you understand the full conversation and build on it.`;
-      }
-
-    return message;
+    Use this context to create an improvement that builds on the previous prompts.`;
   }
+  return message;
+}
 
 /**
  * Build comprehensive system prompt for LLM orchestration
@@ -1003,38 +965,44 @@ function buildSystemPrompt(domain, context, refinementAnswers) {
     console.log('[buildSystemPrompt] Follow-up detected:', isFollowUp);
     
     if (isRefinement) {
-      // This is a REFINEMENT request (v0.2.2)
-      contextInstructions = `
-      ### Conversational Context (Refinement Request - v0.2.2)
-      The user is refining a previously improved prompt based on their answers to clarifying questions.
-      
-      Previous prompts:
-      ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. Original: "${p.original}"`).join('\n')}
-      
-      CRITICAL INSTRUCTIONS FOR REFINEMENT:
-      1. Do NOT repeat the guardrails or structure already added in the previous improvement
-      2. Focus on incorporating the refinement answers to make the prompt more specific
-      3. Build on the previous improvements rather than starting from scratch
-      4. Enhance the prompt based on the user's feedback and answers
-      5. Make targeted, incremental improvements based on the refinement context
-      `;
-        } else if (isFollowUp) {
-          // This is a follow-up prompt - avoid repeating guardrails
+        // This is a REFINEMENT request (v0.2.2)
+        contextInstructions = `
+        ### Conversational Context (Refinement Request - v0.2.2)
+        The user is refining a previously improved prompt based on their answers to clarifying questions.
+        
+        Previous prompts:
+        ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. Original: "${p.original}"`).join('\n')}
+        
+        CRITICAL INSTRUCTIONS FOR REFINEMENT:
+        1. Do NOT repeat the guardrails or structure already added in the previous improvement
+        2. Focus on incorporating the refinement answers to make the prompt more specific
+        3. Build on the previous improvements rather than starting from scratch
+        4. Enhance the prompt based on the user's feedback and answers
+        5. Make targeted, incremental improvements based on the refinement context
+        `;
+      } else if (isFollowUp) {
+          // This is a follow-up prompt - CONSOLIDATE and REFERENCE previous prompts
+          const previousPromptsText = context.previousPrompts
+            .map((p, i) => `${i+1}. "${p.original}" (domain: ${p.domain})`)
+            .join('\n');
+          
           contextInstructions = `
-      ### Conversational Context (Follow-up Prompt - v0.2.1)
-      This is prompt #${context.previousPrompts.length} in a conversation about: ${context.conversationTopic || 'various topics'}
+          ### Conversational Context (Follow-up Prompt - v1.6 CONTEXT-AWARE)
+          This is prompt #${context.previousPrompts.length + 1} in a conversation about: ${context.conversationTopic || 'various topics'}
+          
+          Previous prompts in this conversation:
+          ${previousPromptsText}
       
-      Previous prompts in this conversation:
-      ${context.previousPrompts.slice(-3).map((p, i) => `${i+1}. "${p.original}"`).join('\n')}
-      
-      CRITICAL INSTRUCTIONS FOR FOLLOW-UP PROMPTS:
-      1. Do NOT repeat guardrails/constraints already mentioned in previous improvements
-      2. Build on previous improvements - reference what was already covered
-      3. Focus on NEW aspects and follow-up questions not yet addressed
-      4. Maintain consistency with the tone and structure of previous improvements
-      5. If this is about a related topic (e.g., crypto after wealth building), explicitly connect them
-      6. Avoid regenerating the entire prompt structure - make incremental improvements
-      `;
+          CRITICAL INSTRUCTIONS FOR FOLLOW-UP PROMPTS (v1.6):
+          1. **INCORPORATE CONTEXT**: Reference and build upon the previous prompts
+          2. **CONSOLIDATE**: Bring together the themes from previous prompts
+          3. **CONNECT TOPICS**: Show how the current prompt relates to previous ones
+          4. **ADD SPECIFICITY**: Use details from previous prompts to make it more targeted
+          5. **MAINTAIN CONSISTENCY**: Keep the same tone and style
+          6. Do NOT return generic templates
+          7. Do NOT ignore the previous prompts
+          8. Show deep understanding of the conversation
+          `;
       } else {
         // First prompt - use standard context formatting
         contextInstructions = formatContextForSystemPrompt(context);
