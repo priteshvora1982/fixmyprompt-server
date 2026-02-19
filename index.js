@@ -672,7 +672,8 @@ app.post("/api/improve-prompt", async (req, res) => {
     }
 
     // Build comprehensive system prompt
-    const systemPrompt = buildSystemPrompt(domain, context, refinementAnswers);
+    const systemPrompt = buildSystemPrompt(domain, context?.context || context, refinementAnswers);
+
 
     // Log request details for debugging (v0.2.0)
     console.log(`[Improve Prompt v0.2.0] Request received:`, {
