@@ -140,13 +140,46 @@ const DOMAIN_KEYWORDS = {
     keywords: ['research', 'paper', 'study', 'analysis', 'theory', 'hypothesis', 'experiment', 'data', 'conclusion', 'literature', 'academic', 'education', 'learning', 'course', 'thesis', 'essay'],
     weight: 1.0
   },
-  career: {
-    keywords: ['job', 'resume', 'interview', 'career', 'promotion', 'salary', 'cover letter', 'linkedin', 'networking', 'professional', 'skill', 'experience', 'employer', 'recruiter', 'application'],
+  career: {    
+    keywords: ['job', 'resume', 'interview', 'career', 'promotion', 'salary', 'cover letter', 'linkedin', 'networking', 'professional', 'skill', 'experience', 'employer', 'recruiter', 'application', 'advancement', 'development'],
     weight: 1.0
   },
+  hr: {
+    keywords: ['hire', 'recruit', 'employee', 'staff', 'team', 'onboarding', 'candidate', 'job posting', 'hiring', 'recruitment', 'talent', 'personnel', 'hr', 'human resources', 'applicant', 'screening', 'hiring process'],
+    weight: 1.1
+  },
   personal: {
-    keywords: ['health', 'fitness', 'wellness', 'diet', 'exercise', 'meditation', 'mental', 'family', 'relationship', 'travel', 'hobby', 'personal', 'life', 'goal', 'habit'],
+        keywords: ['health', 'fitness', 'fit', 'wellness', 'diet', 'exercise', 'workout', 'gym', 'training', 'meditation', 'mental', 'family', 'relationship', 'travel', 'hobby', 'personal', 'life', 'goal', 'habit', 'self-improvement', 'wellbeing'],
     weight: 1.0
+  },
+  // New personal development domains
+  fitness: {
+    keywords: ['exercise', 'workout', 'gym', 'training', 'cardio', 'strength', 'running', 'cycling', 'yoga', 'pilates', 'stretching', 'weight loss', 'muscle', 'fitness goal', 'trainer', 'program', 'fit', 'athletic'],
+    weight: 1.2
+  },
+  health: {
+    keywords: ['health', 'wellness', 'diet', 'nutrition', 'medical', 'doctor', 'disease', 'treatment', 'supplement', 'vitamin', 'sleep', 'stress', 'immune', 'preventive', 'wellbeing', 'healthy eating', 'nutrition plan'],
+    weight: 1.2
+  },
+  relationships: {
+    keywords: ['relationship', 'dating', 'marriage', 'partner', 'spouse', 'family', 'friend', 'communication', 'conflict', 'love', 'dating advice', 'breakup', 'divorce', 'intimacy', 'commitment', 'romantic'],
+    weight: 1.1
+  },
+  hobbies: {
+    keywords: ['hobby', 'interest', 'craft', 'art', 'music', 'gaming', 'sports', 'collecting', 'DIY', 'photography', 'painting', 'drawing', 'writing', 'reading', 'cooking', 'gardening', 'creative project'],
+    weight: 1.0
+  },
+  mental_health: {
+    keywords: ['mental health', 'anxiety', 'depression', 'stress', 'therapy', 'counseling', 'mindfulness', 'meditation', 'emotional', 'psychological', 'mental wellness', 'trauma', 'PTSD', 'bipolar', 'OCD', 'mental'],
+    weight: 1.3
+  },
+  personal_development: {
+    keywords: ['personal development', 'self-improvement', 'goal setting', 'productivity', 'time management', 'habits', 'motivation', 'confidence', 'self-esteem', 'growth mindset', 'learning', 'self-help'],
+    weight: 1.1
+  },
+  education: {
+    keywords: ['education', 'learning', 'study', 'student', 'school', 'university', 'course', 'training', 'certification', 'exam', 'homework', 'assignment', 'subject', 'teacher', 'tutor', 'degree'],
+    weight: 1.1
   }
 };
 
@@ -405,6 +438,286 @@ const DOMAIN_QUESTIONS = {
       ]
     }
   ],
+  hr: [
+    {
+      id: 'q1',
+      text: 'What type of position are you hiring for?',
+      answers: [
+        { label: 'Entry-level', value: 'entry' },
+        { label: 'Mid-level', value: 'mid' },
+        { label: 'Senior/Leadership', value: 'senior' },
+        { label: 'Executive', value: 'executive' },
+        { label: 'Specialized/Technical', value: 'technical' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is your primary hiring challenge?',
+      answers: [
+        { label: 'Finding qualified candidates', value: 'qualified' },
+        { label: 'Screening/Filtering', value: 'screening' },
+        { label: 'Interview process', value: 'interview' },
+        { label: 'Retention', value: 'retention' },
+        { label: 'Onboarding', value: 'onboarding' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What industry or field?',
+      answers: [
+        { label: 'Technology', value: 'tech' },
+        { label: 'Finance', value: 'finance' },
+        { label: 'Healthcare', value: 'healthcare' },
+        { label: 'Retail/Customer Service', value: 'retail' },
+        { label: 'Other', value: 'other' }
+      ]
+    }
+  ],
+  fitness: [
+    {
+      id: 'q1',
+      text: 'What type of fitness are you interested in?',
+      answers: [
+        { label: 'Cardio', value: 'cardio' },
+        { label: 'Strength Training', value: 'strength' },
+        { label: 'Flexibility/Yoga', value: 'flexibility' },
+        { label: 'Sports', value: 'sports' },
+        { label: 'General Fitness', value: 'general' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is your current fitness level?',
+      answers: [
+        { label: 'Beginner', value: 'beginner' },
+        { label: 'Intermediate', value: 'intermediate' },
+        { label: 'Advanced', value: 'advanced' },
+        { label: 'Athlete', value: 'athlete' },
+        { label: 'Recovering from injury', value: 'recovering' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What is your main fitness goal?',
+      answers: [
+        { label: 'Weight loss', value: 'weight_loss' },
+        { label: 'Muscle gain', value: 'muscle_gain' },
+        { label: 'Endurance', value: 'endurance' },
+        { label: 'Flexibility', value: 'flexibility' },
+        { label: 'Overall health', value: 'health' }
+      ]
+    }
+  ],
+  health: [
+    {
+      id: 'q1',
+      text: 'What health area are you focused on?',
+      answers: [
+        { label: 'Nutrition', value: 'nutrition' },
+        { label: 'Sleep', value: 'sleep' },
+        { label: 'Stress management', value: 'stress' },
+        { label: 'Disease prevention', value: 'prevention' },
+        { label: 'General wellness', value: 'general' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is your health goal?',
+      answers: [
+        { label: 'Weight management', value: 'weight' },
+        { label: 'Energy and vitality', value: 'energy' },
+        { label: 'Immunity', value: 'immunity' },
+        { label: 'Disease prevention', value: 'prevention' },
+        { label: 'Longevity', value: 'longevity' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'Do you have specific health concerns?',
+      answers: [
+        { label: 'Yes, chronic condition', value: 'chronic' },
+        { label: 'Yes, recent diagnosis', value: 'recent' },
+        { label: 'No, general wellness', value: 'no' },
+        { label: 'Preventive care', value: 'preventive' },
+        { label: 'Prefer not to say', value: 'prefer_not' }
+      ]
+    }
+  ],
+  relationships: [
+    {
+      id: 'q1',
+      text: 'What type of relationship?',
+      answers: [
+        { label: 'Romantic/Dating', value: 'romantic' },
+        { label: 'Marriage', value: 'marriage' },
+        { label: 'Family', value: 'family' },
+        { label: 'Friendship', value: 'friendship' },
+        { label: 'Professional', value: 'professional' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is the main issue?',
+      answers: [
+        { label: 'Communication', value: 'communication' },
+        { label: 'Conflict/Disagreement', value: 'conflict' },
+        { label: 'Intimacy', value: 'intimacy' },
+        { label: 'Trust/Commitment', value: 'trust' },
+        { label: 'Other', value: 'other' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What outcome do you want?',
+      answers: [
+        { label: 'Improve relationship', value: 'improve' },
+        { label: 'End relationship', value: 'end' },
+        { label: 'Maintain status quo', value: 'maintain' },
+        { label: 'Deepen connection', value: 'deepen' },
+        { label: 'Clarify feelings', value: 'clarify' }
+      ]
+    }
+  ],
+  hobbies: [
+    {
+      id: 'q1',
+      text: 'What type of hobby?',
+      answers: [
+        { label: 'Creative (art, music, writing)', value: 'creative' },
+        { label: 'Active (sports, outdoor)', value: 'active' },
+        { label: 'Intellectual (reading, gaming)', value: 'intellectual' },
+        { label: 'Collecting', value: 'collecting' },
+        { label: 'DIY/Making', value: 'diy' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is your experience level?',
+      answers: [
+        { label: 'Beginner', value: 'beginner' },
+        { label: 'Intermediate', value: 'intermediate' },
+        { label: 'Advanced', value: 'advanced' },
+        { label: 'Expert', value: 'expert' },
+        { label: 'Just exploring', value: 'exploring' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What do you want to achieve?',
+      answers: [
+        { label: 'Learn and improve', value: 'learn' },
+        { label: 'Share with others', value: 'share' },
+        { label: 'Monetize', value: 'monetize' },
+        { label: 'Relax and enjoy', value: 'relax' },
+        { label: 'Compete', value: 'compete' }
+      ]
+    }
+  ],
+  mental_health: [
+    {
+      id: 'q1',
+      text: 'What is your main concern?',
+      answers: [
+        { label: 'Anxiety', value: 'anxiety' },
+        { label: 'Depression', value: 'depression' },
+        { label: 'Stress', value: 'stress' },
+        { label: 'Trauma/PTSD', value: 'trauma' },
+        { label: 'Other', value: 'other' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'Are you currently in treatment?',
+      answers: [
+        { label: 'Yes, with therapist', value: 'therapy' },
+        { label: 'Yes, with medication', value: 'medication' },
+        { label: 'No, but considering', value: 'considering' },
+        { label: 'No, self-managing', value: 'self' },
+        { label: 'Prefer not to say', value: 'prefer_not' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What support are you looking for?',
+      answers: [
+        { label: 'Self-help strategies', value: 'self_help' },
+        { label: 'Professional resources', value: 'professional' },
+        { label: 'Community support', value: 'community' },
+        { label: 'Crisis resources', value: 'crisis' },
+        { label: 'Information/Education', value: 'education' }
+      ]
+    }
+  ],
+  personal_development: [
+    {
+      id: 'q1',
+      text: 'What area of development?',
+      answers: [
+        { label: 'Productivity', value: 'productivity' },
+        { label: 'Confidence/Self-esteem', value: 'confidence' },
+        { label: 'Skills', value: 'skills' },
+        { label: 'Habits', value: 'habits' },
+        { label: 'Mindset', value: 'mindset' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What is your main goal?',
+      answers: [
+        { label: 'Achieve specific goal', value: 'achieve' },
+        { label: 'Build new habit', value: 'habit' },
+        { label: 'Overcome challenge', value: 'overcome' },
+        { label: 'Learn new skill', value: 'skill' },
+        { label: 'General growth', value: 'growth' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What is your timeline?',
+      answers: [
+        { label: 'Immediate (days)', value: 'immediate' },
+        { label: 'Short-term (weeks)', value: 'short' },
+        { label: 'Medium-term (months)', value: 'medium' },
+        { label: 'Long-term (year+)', value: 'long' },
+        { label: 'No specific timeline', value: 'flexible' }
+      ]
+    }
+  ],
+  education: [
+    {
+      id: 'q1',
+      text: 'What education level?',
+      answers: [
+        { label: 'K-12', value: 'k12' },
+        { label: 'College/University', value: 'college' },
+        { label: 'Graduate', value: 'graduate' },
+        { label: 'Professional/Certification', value: 'professional' },
+        { label: 'Self-study', value: 'self' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What subject area?',
+      answers: [
+        { label: 'STEM', value: 'stem' },
+        { label: 'Humanities', value: 'humanities' },
+        { label: 'Business', value: 'business' },
+        { label: 'Arts', value: 'arts' },
+        { label: 'Other', value: 'other' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What is your goal?',
+      answers: [
+        { label: 'Pass exam', value: 'pass' },
+        { label: 'Understand concept', value: 'understand' },
+        { label: 'Improve grades', value: 'grades' },
+        { label: 'Master skill', value: 'master' },
+        { label: 'General learning', value: 'general' }
+      ]
+    }
+  ],
   personal: [
     {
       id: 'q1',
@@ -641,10 +954,48 @@ app.get("/api/context/:conversationId", async (req, res) => {
   }
 });
 
+// ============================================================================
+// PROMPT SCORING FUNCTION (v0.2.4 - FIXED)
+// ============================================================================
+
+function calculatePromptScore(prompt) {
+  let score = 0;
+  
+  // Clarity (0-25)
+  const hasGoal = /goal|objective|want|need|aim|purpose/i.test(prompt);
+  const hasContext = /because|since|for|to|in order to/i.test(prompt);
+  const hasConstraints = /without|except|only|must|should|cannot/i.test(prompt);
+  score += hasGoal ? 10 : 0;
+  score += hasContext ? 8 : 0;
+  score += hasConstraints ? 7 : 0;
+  
+  // Structure (0-25)
+  const sentences = prompt.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const avgLength = prompt.length / Math.max(1, sentences.length);
+  score += Math.min(10, sentences.length * 3);
+  score += avgLength > 50 ? 5 : 0;
+  
+  // Completeness (0-25)
+  const wordCount = prompt.split(/\s+/).length;
+  score += Math.min(15, wordCount);
+  
+  // Specificity (0-25)
+  const hasNumbers = /\d+/.test(prompt);
+  const hasQuotes = /["'`]/.test(prompt);
+  const hasExamples = /example|such as|like|for instance/i.test(prompt);
+  score += hasNumbers ? 5 : 0;
+  score += hasQuotes ? 5 : 0;
+  score += hasExamples ? 5 : 0;
+  
+  return Math.min(100, Math.round(score));
+}
+
+
 /**
  * Main prompt improvement endpoint (v1.0 - backward compatible)
  * POST /api/improve-prompt
  */
+
 app.post("/api/improve-prompt", async (req, res) => {
   try {
     const { prompt, platform, domain, context, refinementAnswers } = req.body;
@@ -716,18 +1067,16 @@ app.post("/api/improve-prompt", async (req, res) => {
       });
     }
 
-    // Calculate score (v0.2.3 - handles both improvements and refinements)
-    let score;
-    if (refinementAnswers && Object.keys(refinementAnswers).length > 0) {
-      // For refinements: score based on quality, not length
-      const refinementBonus = Math.min(2, Object.keys(refinementAnswers).length * 0.5);
-      score = Math.min(10, 7 + refinementBonus);
-      console.log('[Improve Prompt v0.2.3] Refinement scoring - Base: 7, Bonus: ' + refinementBonus + ', Final: ' + score);
-      } else {
-        // For initial improvements: score based on length improvement
-        score = Math.min(10, 5 + (improvedPrompt.length - prompt.length) / 50);
-        console.log('[Improve Prompt v0.2.3] Improvement scoring - Length delta: ' + (improvedPrompt.length - prompt.length) + ', Score: ' + score.toFixed(1));
-      }
+    // Calculate score (v0.2.4 - FIXED: returns before/after scores 0-100)
+    const scoreBefore = calculatePromptScore(prompt);
+    const scoreAfter = calculatePromptScore(improvedPrompt);
+    const scoreImprovement = scoreAfter - scoreBefore;
+    
+    console.log('[Improve Prompt v0.2.4] Score calculation:', {
+      before: scoreBefore,
+      after: scoreAfter,
+      improvement: scoreImprovement
+    });
 
 
 
@@ -742,11 +1091,15 @@ app.post("/api/improve-prompt", async (req, res) => {
       questionsGenerated: contextAwareQuestions.length
     });
 
-    // Return response (v0.2.2 - Enhanced with context info)
+    // Return response (v0.2.4 - FIXED: score is now before/after object)
     const responseData = {
       success: true,
       improved: improvedPrompt,
-      score: parseFloat(score.toFixed(1)),
+      score: {
+        before: scoreBefore,
+        after: scoreAfter,
+        improvement: scoreImprovement
+      },
       timestamp: Date.now(),
       // NEW in v0.2.0: context-aware questions
       questions: contextAwareQuestions,
