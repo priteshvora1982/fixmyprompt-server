@@ -1087,7 +1087,11 @@ app.post("/api/improve-prompt", async (req, res) => {
     console.log(`[Improve Prompt v0.2.0] Success:`, {
       originalLength: prompt.length,
       improvedLength: improvedPrompt.length,
-      score: score,
+      score: {
+          before: scoreBefore,
+          after: scoreAfter,
+          improvement: scoreImprovement
+        },
       questionsGenerated: contextAwareQuestions.length
     });
 
