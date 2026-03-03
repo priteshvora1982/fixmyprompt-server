@@ -1308,7 +1308,28 @@ function buildSystemPrompt(domain, context, refinementAnswers) {
       - Consider tax implications and diversification`;
     }
 
+  // ── Change C: Inject refinementAnswers into GPT prompt ───────────────────
+  // Runs ONLY when context is absent (i.e. balloon flow).
+  // When context IS present (Refine tab), the existing isRefinement block
+  // inside if(context) handles it — no double-injection.
+  if (refinementAnswers && Object.keys(refinementAnswers).length > 0 && !context) {
+    const answersText = Object.entries(refinementAnswers)
+      .map(([, val]) => {
+        const display = Array.isArray(val) ? val.join(', ') : String(val);
+        return `  - ${display}`;
+      })
+      .join('\n');
 
+      domainSpecificInstructions += `
+  
+      ### User's Clarifying Answers — CRITICAL
+      The user answered clarifying questions before requesting this improvement.
+      Incorporate ALL of the following answers. Build the improved prompt specifically
+      around them. Do NOT produce a generic improvement:
+      
+      ${answersText}`;
+  }
+      // ── End Change C ─────────────────────────────────────────────────────────
   // Add context-aware instructions if context is provided (v0.2.0 - ENHANCED)
   // Add context-aware instructions if context is provided (v0.2.1 - FOLLOW-UP DETECTION)
   // Add context-aware instructions if context is provided (v0.2.2 - REFINEMENT DETECTION)
