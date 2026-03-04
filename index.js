@@ -124,10 +124,62 @@ const DOMAIN_KEYWORDS = {
     keywords: ['code', 'python', 'javascript', 'function', 'algorithm', 'debug', 'api', 'database', 'server', 'optimize', 'performance', 'sql', 'react', 'node', 'git', 'docker', 'aws', 'programming', 'software', 'development', 'framework', 'library'],
     weight: 1.0
   },
-  creative: {
-    keywords: ['story', 'write', 'poem', 'creative', 'fiction', 'character', 'plot', 'dialogue', 'narrative', 'script', 'song', 'art', 'design', 'visual', 'imagine', 'brainstorm', 'idea', 'concept'],
-    weight: 1.0
+  creative_writing: {
+    keywords: [
+      'write', 'draft', 'compose', 'copywriting', 'blog post', 'article', 'essay',
+      'story', 'short story', 'fiction', 'novel', 'poem', 'poetry', 'song lyrics',
+      'script', 'screenplay', 'dialogue', 'monologue', 'speech', 'toast', 'vow',
+      'website copy', 'landing page copy', 'homepage copy', 'about page', 'sales copy',
+      'ad copy', 'advertisement copy', 'marketing copy', 'product description',
+      'product listing', 'tagline', 'slogan', 'headline', 'subject line',
+      'email', 'email copy', 'newsletter', 'cold email', 'email sequence',
+      'drip campaign', 'onboarding email', 'outreach email', 'pitch email',
+      'social media caption', 'caption', 'tweet', 'thread', 'linkedin article',
+      'press release', 'announcement', 'white paper', 'case study', 'ebook',
+      'how-to guide', 'listicle', 'faq', 'knowledge base article', 'help article',
+      'readme', 'content brief', 'content calendar', 'editorial', 'op-ed',
+      'brand story', 'founder story', 'origin story', 'mission statement',
+      'value proposition', 'elevator pitch', 'executive summary',
+      'cover letter', 'recommendation letter', 'resignation letter',
+      'wedding speech', 'best man speech', 'motivational speech', 'ted talk',
+      'podcast script', 'video script', 'youtube script', 'explainer script',
+      'narrator script', 'voiceover script', 'chatbot script'
+    ],
+    weight: 1.1
   },
+  creative_media: {
+    keywords: [
+      'poster', 'banner', 'flyer', 'brochure', 'infographic', 'social media post',
+      'instagram post', 'instagram story', 'instagram reel', 'instagram carousel',
+      'linkedin post', 'linkedin banner', 'twitter banner', 'facebook post', 'facebook cover',
+      'tiktok', 'tiktok short', 'reel', 'youtube short', 'youtube thumbnail', 'youtube video',
+      'channel art', 'video script', 'video production', 'video edit', 'video clip',
+      'movie scene', 'film clip', 'motion graphic', 'explainer video', 'promo video',
+      'product video', 'testimonial video', 'webinar',
+      'email template', 'newsletter design', 'email banner', 'html email',
+      'landing page design', 'website design', 'web design', 'homepage design',
+      'ui mockup', 'ux mockup', 'app design', 'mobile app design', 'app screen',
+      'presentation design', 'slide deck', 'powerpoint', 'ppt', 'keynote', 'google slides',
+      'pitch deck design', 'investor deck design',
+      'logo design', 'brand identity', 'brand kit', 'color palette', 'mood board',
+      'storyboard', 'wireframe', 'mockup', 'prototype', 'figma', 'canva',
+      'image generation', 'midjourney', 'dall-e', 'stable diffusion', 'text to image',
+      'video generation', 'sora', 'runway', 'kling', 'pika', 'text to video',
+      'voiceover', 'podcast script', 'audio script', 'elevenlabs', 'suno', 'udio',
+      'ai avatar', 'talking avatar', 'digital avatar', 'virtual avatar', 'heygen', 'synthesia',
+      'ebook cover', 'book cover', 'album cover', 'thumbnail',
+      'app icon', 'favicon', 'ui design', 'ux design',
+      'photoshop', 'illustrator', 'adobe', 'sketch', 'invision', 'framer',
+      'business card', 'letterhead', 'packaging design', 'label design',
+      'merchandise design', 't-shirt design', 'billboard', 'signage', 'print design',
+      'photorealistic', 'cinematic', 'hyperrealistic', 'concept art', 'digital art',
+      'ai art', 'generative art', 'pixel art', 'isometric', 'flat design',
+      'anime style', 'manga style', 'comic style', 'watercolor style', 'oil painting style',
+      'create a', 'design a', 'generate an image', 'make a poster', 'make a banner',
+      'make a video', 'make a reel', 'make a short'
+    ],
+    weight: 1.3
+  }, 
   business: {
     keywords: ['business', 'marketing', 'sales', 'strategy', 'revenue', 'customer', 'product', 'market', 'growth', 'roi', 'profit', 'investment', 'startup', 'entrepreneur', 'brand', 'campaign', 'analytics', 'metrics'],
     weight: 1.0
@@ -298,7 +350,7 @@ const DOMAIN_QUESTIONS = {
       ]
     }
   ],
-  creative: [
+  creative_writing: [
     {
       id: 'q1',
       text: 'What type of creative content are you working on?',
@@ -753,6 +805,53 @@ const DOMAIN_QUESTIONS = {
       ]
     }
   ],
+  creative_media: [
+    {
+      id: 'q1',
+      text: 'What are you creating?',
+      answers: [
+        { label: 'Image / Illustration / AI art', value: 'image' },
+        { label: 'Logo / Icon / Avatar', value: 'logo' },
+        { label: 'Video clip / Movie scene', value: 'video_clip' },
+        { label: 'Reel / TikTok / YouTube Short', value: 'reel' },
+        { label: 'Podcast / Voiceover / Audio', value: 'audio' },
+        { label: 'Social media graphic / Story', value: 'social_media' },
+        { label: 'Presentation / Slide deck', value: 'presentation' },
+        { label: 'Poster / Banner / Flyer', value: 'poster' },
+        { label: 'Website / Landing page design', value: 'website' },
+        { label: 'Brand kit / Mood board', value: 'brand' }
+      ]
+    },
+    {
+      id: 'q2',
+      text: 'What platform or format is this for?',
+      answers: [
+        { label: 'Instagram (post / story / reel)', value: 'instagram' },
+        { label: 'TikTok / YouTube Shorts', value: 'tiktok_shorts' },
+        { label: 'YouTube (video / thumbnail)', value: 'youtube' },
+        { label: 'LinkedIn / Twitter / X', value: 'linkedin_twitter' },
+        { label: 'Website / Web app', value: 'web' },
+        { label: 'Print (A4, billboard, packaging)', value: 'print' },
+        { label: 'AI tool (Midjourney, DALL-E, Sora)', value: 'ai_tool' },
+        { label: 'Email / Newsletter', value: 'email' }
+      ]
+    },
+    {
+      id: 'q3',
+      text: 'What style or aesthetic should it have?',
+      answers: [
+        { label: 'Photorealistic', value: 'photorealistic' },
+        { label: 'Cinematic / Film noir', value: 'cinematic' },
+        { label: 'Illustration / Cartoon', value: 'illustration' },
+        { label: 'Anime / Manga', value: 'anime' },
+        { label: 'Minimalist / Flat design', value: 'minimalist' },
+        { label: 'Surreal / Fantasy', value: 'surreal' },
+        { label: 'Vintage / Retro', value: 'vintage' },
+        { label: 'Dark & moody', value: 'dark' },
+        { label: 'Luxury & premium', value: 'luxury' }
+      ]
+    }
+  ],  
   general: [
     {
       id: 'q1',
