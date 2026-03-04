@@ -889,7 +889,8 @@ const DOMAIN_QUESTIONS = {
   ]
 };
 
-function generateQuestions(domain) {
+function generateQuestions(domain, promptText = null) {
+  // promptText is accepted for future use but not used in hardcoded fallback path
   const questions = DOMAIN_QUESTIONS[domain] || DOMAIN_QUESTIONS['general'] || [];
   return questions.map(q => ({
     ...q,
@@ -947,9 +948,9 @@ app.post("/api/detect-domain", (req, res) => {
  * Question Generation Endpoint (v1.5)
  * POST /api/generate-questions
  */
-app.post("/api/generate-questions", (req, res) => {
+app.post("/api/generate-questions", async (req, res) => {
   try {
-    const { prompt, domain } = req.body;
+    const { prompt, domain, context } = req.body;
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return res.status(400).json({
@@ -965,12 +966,63 @@ app.post("/api/generate-questions", (req, res) => {
       });
     }
 
-    const questions = generateQuestions(domain);
+    // Use the actual prompt text (or context field) to generate contextual questions via GPT.
+    // Fall back to hardcoded domain questions if GPT fails.
+    const promptText = (context && context.trim().length > 0) ? context : prompt;
 
+    try {
+      const gptResponse = await openai.chat.completions.create({
+        model: "gpt-4-turbo",
+        messages: [
+          {
+            role: "system",
+            content: `You are a prompt improvement assistant. Given a user's prompt, generate exactly 3 clarifying questions that would help improve it. Each question must be directly relevant to the specific content of the prompt — NOT generic domain questions.
+
+                    Return a JSON array of exactly 3 question objects. Each object must have:
+                    - "id": "q1", "q2", or "q3"
+                    - "text": the question text (specific to the prompt, not generic)
+                    - "answers": array of 4–6 answer objects, each with "label" (display text) and "value" (short key)
+                    
+                    Rules:
+                    - Questions must be specific to what the user is asking for (e.g. if they say "landing page copy for my SaaS", ask about the product, the target customer, the desired CTA — NOT "what type of creative content are you working on?")
+                    - Answers must be concrete, relevant options — not generic placeholders
+                    - Return ONLY the JSON array, no explanation or markdown`
+          },
+          {
+            role: "user",
+            content: `Generate 3 contextual clarifying questions for this prompt:\n\n"${promptText}"\n\nDomain: ${domain}`
+          }
+        ],
+        temperature: 0.4,
+        max_tokens: 800
+      });
+
+      const raw = gptResponse.choices[0].message.content.trim();
+      // Strip markdown code fences if present
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+      const questions = JSON.parse(cleaned);
+
+      if (Array.isArray(questions) && questions.length > 0) {
+        console.log(`[Question Generation] GPT generated ${questions.length} contextual questions for domain: ${domain}`);
+        return res.json({
+          success: true,
+          questions: questions,
+          source: "gpt"
+        });
+      }
+    } catch (gptError) {
+      console.warn("[Question Generation] GPT failed, falling back to hardcoded questions:", gptError.message);
+    }
+
+    // Fallback: return hardcoded domain questions
+    const questions = generateQuestions(domain);
+    console.log(`[Question Generation] Using hardcoded fallback for domain: ${domain}`);
     res.json({
       success: true,
-      questions: questions
+      questions: questions,
+      source: "fallback"
     });
+
   } catch (error) {
     console.error("[Question Generation] Error:", error.message);
     res.status(500).json({
@@ -1362,14 +1414,25 @@ function buildSystemPrompt(domain, context, refinementAnswers) {
       - Include relevant examples or code snippets where applicable
       - Consider performance implications
       - Emphasize best practices and industry standards`;
-    } else if (domain === 'creative') {
+     } else if (domain === 'creative_writing') {
       domainSpecificInstructions = `
-      ### Domain-Specific Guidance (Creative)
-      - Enhance narrative flow and emotional impact
-      - Maintain the author's unique voice and style
-      - Consider audience engagement and storytelling techniques
-      - Balance creativity with clarity`;
-    } else if (domain === 'business') {
+      ### Domain-Specific Guidance (Creative Writing)
+      - Define the content type clearly: blog post, landing page copy, ad copy, email, script, etc.
+      - Specify the target audience and their pain points
+      - Include the desired tone, voice, and style (formal, conversational, persuasive, etc.)
+      - State the platform or medium (website, email, social media, print)
+      - Define the call-to-action or desired reader outcome
+      - Maintain the author's unique voice while improving clarity and impact`;
+    } else if (domain === 'creative_media') {
+      domainSpecificInstructions = `
+      ### Domain-Specific Guidance (Creative Media)
+      - Specify the exact output format: image, video clip, reel, avatar, poster, slide deck, etc.
+      - Define the visual style and aesthetic: photorealistic, cinematic, illustration, anime, minimalist, etc.
+      - Include platform and aspect ratio requirements (Instagram 9:16, YouTube 16:9, print A4, etc.)
+      - Describe the subject, scene, or composition in detail
+      - Add lighting, color palette, and mood descriptors
+      - For AI tools (Midjourney, DALL-E, Sora): include negative prompts to avoid unwanted artifacts`;
+    } else if (domain === 'business') {      
       domainSpecificInstructions = `
       ### Domain-Specific Guidance (Business)
       - Focus on ROI and business impact
