@@ -972,7 +972,7 @@ app.post("/api/generate-questions", async (req, res) => {
 
     try {
       const gptResponse = await openai.chat.completions.create({
-        model: "gpt-4-turbo",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
@@ -1188,7 +1188,7 @@ app.post("/api/improve-prompt", async (req, res) => {
 
     // Call OpenAI API
     const response = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -1709,7 +1709,7 @@ app.listen(PORT, () => {
   console.log(`  ✅ Context-aware questions (v0.2.0)`);
   console.log(`  ✅ Context-aware system prompts (v0.2.0)`);
   console.log(`[FixMyPrompt Server v0.2.0] Environment: ${NODE_ENV}`);
-  console.log(`[FixMyPrompt Server v0.2.0] Model: gpt-4-turbo`);
+  console.log(`[FixMyPrompt Server v0.2.0] Model: gpt-4o-mini`);
   console.log(`[FixMyPrompt Server v0.2.0] CORS: Allowing all chrome-extension:// origins`);
 
   // Verify API key is set
